@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>İade Alma</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="main-content">
+    <header class="topbar">
+        <div>
+            <h1>İade Alma</h1>
+            <p>Ödünç verilen kitapların iade işlemleri</p>
+        </div>
+    </header>
+
+    <section class="welcome-box">
+        {% if oduncler|length == 0 %}
+            <p>Şu anda ödünç verilmiş kitap bulunmamaktadır.</p>
+        {% else %}
+            {% for odunc in oduncler %}
+                <div class="card">
+                    <h3>{{ odunc.kitap_adi }}</h3>
+                    <p>Üye: {{ odunc.uye_adi }}</p>
+                    <p>Ödünç Tarihi: {{ odunc.tarih }}</p>
+                    <p>Durum: {{ odunc.durum }}</p>
+
+                    <a href="/iade-et/{{ loop.index0 }}">İade Et</a>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </section>
+</div>
+
+</body>
+</html>
