@@ -48,10 +48,10 @@
                         <div class="odunc-kart-ic odunc-liste">
                             {% for uye in uyeler %}
                             <label class="odunc-uye-satir">
-                                <input type="radio" name="uye_adi" value="{{ uye.ad }}" required>
-                                <div class="odunc-uye-ikon">{{ uye.ad[0] }}</div>
+                                <input type="radio" name="uye_adi" value="{{ uye.name }}" required>
+                                <div class="odunc-uye-ikon">{{ uye.name[0] }}</div>
                                 <div class="odunc-uye-bilgi">
-                                    <strong>{{ uye.ad }}</strong>
+                                    <strong>{{ uye.name }}</strong>
                                     <span>{{ uye.email }}</span>
                                 </div>
                             </label>
