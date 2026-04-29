@@ -10,6 +10,8 @@ UYELER_DOSYASI = "data/uyeler.json"
 ODUNCLER_DOSYASI = "data/oduncler.json"
 
 
+
+
 # -------------------------
 # Yardımcı JSON Fonksiyonları
 # -------------------------
@@ -126,6 +128,36 @@ def iade_et(index):
         json_yaz(ODUNCLER_DOSYASI, oduncler)
 
     return redirect("/iade-al")
+
+
+# -------------------------
+# Üye Yönetimi - Elif
+# -------------------------
+
+@app.route("/uyeler", methods=["GET", "POST"])
+def uyeler():
+    uye_listesi = json_oku(UYELER_DOSYASI)
+    if request.method == "POST":
+        yeni_uye = {
+            "name": request.form.get("name"),
+            "email": request.form.get("email"),
+            "book": request.form.get("book") or "Yok",
+            "count": "1",
+            "date": "2026-04-29",
+            "color": "#4B2CB9"
+        }
+        uye_listesi.append(yeni_uye)
+        json_yaz(UYELER_DOSYASI, uye_listesi)
+        return redirect("/uyeler")
+    return render_template("uyeler.html", uyeler=uye_listesi)
+
+@app.route("/uye-sil/<int:index>")
+def uye_sil(index):
+    uye_listesi = json_oku(UYELER_DOSYASI)
+    if 0 <= index < len(uye_listesi):
+        uye_listesi.pop(index)
+        json_yaz(UYELER_DOSYASI, uye_listesi)
+    return redirect("/uyeler")
 
 
 # -------------------------

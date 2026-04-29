@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-4" style="font-family: 'Inter', sans-serif;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="font-weight: 800; color: #1A1A1A;">Üye Yönetimi</h2>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uyeEkleModal" 
+                style="background-color: #00D27B; border: none; font-weight: bold; border-radius: 10px; padding: 10px 20px;">
+            + Üye Ekle
+        </button>
+    </div>
+
+    <div class="row">
+        {% for uye in uyeler %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100" style="border-radius: 15px; border: 1px solid #E0E0E0; background-color: white;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div style="width: 45px; height: 45px; background-color: {{ uye.color }}; color: white; 
+                                    border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+                                    font-weight: bold; margin-right: 15px;">
+                            {{ uye.name[:1] }}
+                        </div>
+                        <div>
+                            <h5 class="mb-0" style="font-weight: 700;">{{ uye.name }}</h5>
+                            <small class="text-muted">{{ uye.email }}</small>
+                        </div>
+                    </div>
+
+                    <div class="p-2 mb-3" style="background-color: #FFF8E1; color: #FFB300; border-radius: 8px; font-size: 0.9rem;">
+                        📙 <strong>{{ uye.book }}</strong>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm w-100" style="background-color: #FFF8E1; color: #FFB300; font-weight: 600;">Düzenle</button>
+                        <a href="/uye-sil/{{ loop.index0 }}" class="btn btn-sm w-100" style="background-color: #FFEBEE; color: #FF5252; font-weight: 600; text-decoration: none; text-align: center;">Sil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="modal fade" id="uyeEkleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="POST" style="border-radius: 20px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" style="font-weight: bold;">Yeni Üye Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" name="name" class="form-control" placeholder="Ad Soyad" required style="border-radius: 10px;">
+                </div>
+                <div class="mb-3">
+                    <input type="email" name="email" class="form-control" placeholder="E-posta" required style="border-radius: 10px;">
+                </div>
+                <div class="mb-3">
+                    <input type="text" name="book" class="form-control" placeholder="Ödünç Kitap" style="border-radius: 10px;">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="submit" class="btn btn-primary w-100" style="background-color: #00D27B; border: none; border-radius: 10px; font-weight: bold; padding: 12px;">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
