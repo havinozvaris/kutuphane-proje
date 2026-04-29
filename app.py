@@ -82,33 +82,29 @@ def kitaplar():
 
 @app.route("/odunc-ver", methods=["GET", "POST"])
 def odunc_ver():
+    # Verileri dosyadan okuyoruz
     kitaplar = json_oku(KITAPLAR_DOSYASI)
     uyeler = json_oku(UYELER_DOSYASI)
-    oduncler = json_oku(ODUNCLER_DOSYASI)
-
+    
     if request.method == "POST":
-        kitap_adi = request.form.get("kitap_adi")
-        uye_adi = request.form.get("uye_adi")
-        tarih = request.form.get("tarih")
-
+        # Formdan gelen verileri alıyoruz
         yeni_odunc = {
-            "kitap_adi": kitap_adi,
-            "uye_adi": uye_adi,
-            "tarih": tarih,
+            "kitap_adi": request.form.get("kitap_adi"),
+            "uye_adi": request.form.get("uye_adi"),
+            "tarih": request.form.get("tarih"),
             "durum": "Ödünç Verildi"
         }
-
+        
+        # Mevcut ödünç listesini alıp yenisini ekliyoruz
+        oduncler = json_oku(ODUNCLER_DOSYASI)
         oduncler.append(yeni_odunc)
         json_yaz(ODUNCLER_DOSYASI, oduncler)
+        
+        # İşlem bitince ana sayfaya yönlendir
+        return redirect("/")
 
-        return redirect("/odunc-ver")
-
-    return render_template(
-        "odunc_ver.html",
-        kitaplar=kitaplar,
-        uyeler=uyeler,
-        oduncler=oduncler
-    )
+    # Sayfayı açarken verileri gönderiyoruz
+    return render_template("odunc_ver.html", kitaplar=kitaplar, uyeler=uyeler)
 
 
 # -------------------------
