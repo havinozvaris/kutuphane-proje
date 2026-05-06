@@ -1,1 +1,8 @@
-[]
+[
+    {
+        "kitap_adi": "1984",
+        "uye_adi": "Ahmet Yılmaz",
+        "tarih": "2026-05-06",
+        "durum": "Ödünç Verildi"
+    }
+]

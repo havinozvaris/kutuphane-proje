@@ -20,13 +20,13 @@
 
     <section class="welcome-box">
         <h2>İade İşlemleri</h2>
-        <p>Bu bölümde ödünç verilmiş kitaplar listelenir. İade edilen kitap, sistemden kaldırılır.</p>
+        <p>Bu bölümde ödünç verilmiş kitaplar listelenir. İade edilen kitap, sistemde tekrar mevcut hale getirilir.</p>
     </section>
 
     <section class="cards">
         <div class="card">
             <div class="icon orange">📦</div>
-            <h3>{{ oduncler|length }}</h3>
+            <h3>{{ loaned_books|length }}</h3>
             <p>Ödünçteki Kitap</p>
         </div>
 
@@ -40,22 +40,24 @@
     <section class="welcome-box iade-listesi">
         <h2>📚 Ödünç Verilen Kitaplar</h2>
 
-        {% if oduncler|length == 0 %}
+        {% if loaned_books|length == 0 %}
             <div class="empty-box">
                 <h3>📭 Kayıt bulunamadı</h3>
                 <p>Şu anda ödünç verilmiş kitap bulunmamaktadır.</p>
             </div>
         {% else %}
-            {% for odunc in oduncler %}
+            {% for loan in loaned_books %}
                 <div class="iade-card">
                     <div>
-                        <h3>{{ odunc.kitap_adi }}</h3>
-                        <p>👤 Üye: {{ odunc.uye_adi }}</p>
-                        <p>📅 Ödünç Tarihi: {{ odunc.tarih }}</p>
-                        <p>📌 Durum: {{ odunc.durum }}</p>
+                        <h3>{{ loan.title }}</h3>
+                        <p>👤 Üye: {{ loan.member_name }}</p>
+                        <p>📅 Ödünç Tarihi: {{ loan.loan_date }}</p>
+                        <p>🔖 ISBN: {{ loan.isbn }}</p>
                     </div>
 
-                    <a class="iade-btn" href="/iade-et/{{ loop.index0 }}">İade Et</a>
+                    <form action="/loans/return/{{ loan.loan_id }}" method="POST">
+                        <button class="iade-btn" type="submit">İade Et</button>
+                    </form>
                 </div>
             {% endfor %}
         {% endif %}
