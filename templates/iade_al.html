@@ -8,29 +8,59 @@
 <body>
 
 <div class="main-content">
+
     <header class="topbar">
         <div>
-            <h1>İade Alma</h1>
-            <p>Ödünç verilen kitapların iade işlemleri</p>
+            <h1>↩️ İade Alma</h1>
+            <p>Ödünç verilen kitapların iade işlemlerini buradan yönetebilirsiniz.</p>
         </div>
+
+        <a class="back-btn" href="/">🏠 Dashboard</a>
     </header>
 
     <section class="welcome-box">
+        <h2>İade İşlemleri</h2>
+        <p>Bu bölümde ödünç verilmiş kitaplar listelenir. İade edilen kitap, sistemden kaldırılır.</p>
+    </section>
+
+    <section class="cards">
+        <div class="card">
+            <div class="icon orange">📦</div>
+            <h3>{{ oduncler|length }}</h3>
+            <p>Ödünçteki Kitap</p>
+        </div>
+
+        <div class="card">
+            <div class="icon green">✅</div>
+            <h3>Aktif</h3>
+            <p>İade Sistemi</p>
+        </div>
+    </section>
+
+    <section class="welcome-box iade-listesi">
+        <h2>📚 Ödünç Verilen Kitaplar</h2>
+
         {% if oduncler|length == 0 %}
-            <p>Şu anda ödünç verilmiş kitap bulunmamaktadır.</p>
+            <div class="empty-box">
+                <h3>📭 Kayıt bulunamadı</h3>
+                <p>Şu anda ödünç verilmiş kitap bulunmamaktadır.</p>
+            </div>
         {% else %}
             {% for odunc in oduncler %}
-                <div class="card">
-                    <h3>{{ odunc.kitap_adi }}</h3>
-                    <p>Üye: {{ odunc.uye_adi }}</p>
-                    <p>Ödünç Tarihi: {{ odunc.tarih }}</p>
-                    <p>Durum: {{ odunc.durum }}</p>
+                <div class="iade-card">
+                    <div>
+                        <h3>{{ odunc.kitap_adi }}</h3>
+                        <p>👤 Üye: {{ odunc.uye_adi }}</p>
+                        <p>📅 Ödünç Tarihi: {{ odunc.tarih }}</p>
+                        <p>📌 Durum: {{ odunc.durum }}</p>
+                    </div>
 
-                    <a href="/iade-et/{{ loop.index0 }}">İade Et</a>
+                    <a class="iade-btn" href="/iade-et/{{ loop.index0 }}">İade Et</a>
                 </div>
             {% endfor %}
         {% endif %}
     </section>
+
 </div>
 
 </body>
