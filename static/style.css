@@ -189,11 +189,10 @@ body {
 
 /* --- ÖDÜNÇ VERME SAYFASI ÖZEL TASARIM --- */
 .odunc-ana-grid {
-    display: flex;
+    display: grid !important; /* Flex yerine Grid'i zorla kullan diyoruz */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
     gap: 20px;
     padding: 20px;
-    flex-wrap: wrap;
-    align-items: flex-start;
 }
 
 .odunc-kart {

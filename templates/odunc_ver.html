@@ -1,81 +1,46 @@
 {% extends "base.html" %}
 {% block title %}Ödünç Ver{% endblock %}
+{% block topbar_title %}Kitap Ödünç Ver{% endblock %}
 
 {% block content %}
-<main class="main-content">
-    <header class="topbar">
-        <h1>Kitap Ödünç Ver</h1>
-        <p>LibraryOS · Python Tabanlı Kütüphane Yönetim Sistemi</p>
-    </header>
-
-    <form action="{{ url_for('add_loan') }}" method="POST" class="odunc-form-alani">
-        <div class="odunc-ana-grid">
-            
-            <!-- 1. Kitap Seçimi -->
-            <div class="odunc-kart">
-                <div class="odunc-kart-ust"><span class="odunc-sayi">1</span> Kitap Seçimi</div>
-                <div class="odunc-kart-ic">
-                    <!-- Python'da 'book_id' beklediğimiz için name'i güncelledim -->
-                    <select name="book_id" id="js-kitap-sec" required class="odunc-select">
-                        <option value="">Kitap seçiniz...</option>
+<div class="odunc-ana-grid">
+    <div class="odunc-kart">
+        <div class="odunc-kart-ust"><span class="odunc-sayi">1</span> Ödünç Verme Formu</div>
+        <div class="odunc-kart-ic">
+            <form action="{{ url_for('add_loan') }}" method="POST">
+                <div class="form-group">
+                    <label>Kitap Seç *</label>
+                    <select name="book_id" required class="odunc-select">
+                        <option value="">-- Kitap seçiniz --</option>
                         {% for kitap in available_books %}
-                            <option value="{{ kitap.id }}" data-title="{{ kitap.title }}">{{ kitap.title }}</option>
+                            <option value="{{ kitap.id }}">{{ kitap.title }}</option>
                         {% endfor %}
                     </select>
                 </div>
-            </div>
-
-            <!-- 2. Üye Seçimi -->
-            <div class="odunc-kart">
-                <div class="odunc-kart-ust"><span class="odunc-sayi">2</span> Üye Seçimi</div>
-                <div class="odunc-kart-ic odunc-liste">
-                    {% for uye in all_members %}
-                    <label class="odunc-uye-satir">
-                        <!-- Python'da 'member_id' beklediğimiz için name'i güncelledim -->
-                        <input type="radio" name="member_id" value="{{ uye.id }}" data-name="{{ uye.name }}" required>
-                        <div class="odunc-uye-ikon">{{ uye.name[0] }}</div>
-                        <div class="odunc-uye-bilgi">
-                            <strong>{{ uye.name }}</strong>
-                            <span>{{ uye.email }}</span>
-                        </div>
-                    </label>
-                    {% endfor %}
+                <div class="form-group" style="margin-top:15px;">
+                    <label>Üye Seç *</label>
+                    <select name="member_id" required class="odunc-select">
+                        <option value="">-- Üye seçiniz --</option>
+                        {% for uye in all_members %}
+                            <option value="{{ uye.id }}">{{ uye.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-            </div>
-
-            <!-- 3. Onay -->
-            <div class="odunc-kart">
-                <div class="odunc-kart-ust"><span class="odunc-sayi">3</span> İşlem Özetı & Onay</div>
-                <div class="odunc-kart-ic">
-                    <div class="odunc-ozet-kutusu">
-                        <span class="odunc-ozet-baslik">İŞLEM ÖZETİ</span>
-                        <div class="odunc-ozet-satir"><span>Kitap:</span> <span id="js-ozet-kitap">--</span></div>
-                        <div class="odunc-ozet-satir"><span>Üye:</span> <span id="js-ozet-uye">--</span></div>
-                        <div class="odunc-ozet-satir odunc-vurgu"><span>Tarih:</span> <span>{{ now }}</span></div>
-                    </div>
-
-                    <button type="submit" class="odunc-buton">📖 Kitabı Ödünç Ver</button>
-                </div>
-            </div>
-
+                <button type="submit" class="odunc-buton" style="margin-top:20px;">📖 Ödünç Ver</button>
+            </form>
         </div>
-    </form>
-</main>
+    </div>
 
-<script>
-    // Özet alanını dinamik güncellemek için küçük script
-    const kSelect = document.getElementById('js-kitap-sec');
-    const uRadios = document.querySelectorAll('input[name="member_id"]');
-
-    kSelect.addEventListener('change', () => {
-        const selectedOption = kSelect.options[kSelect.selectedIndex];
-        document.getElementById('js-ozet-kitap').innerText = selectedOption.dataset.title || "--";
-    });
-
-    uRadios.forEach(r => {
-        r.addEventListener('change', () => {
-            document.getElementById('js-ozet-uye').innerText = r.dataset.name;
-        });
-    });
-</script>
+    <div class="odunc-kart">
+        <div class="odunc-kart-ust"><span class="odunc-sayi">2</span> Özet</div>
+        <div class="odunc-kart-ic">
+            <div class="odunc-ozet-kutusu">
+                <p>Tarih: <strong>{{ now }}</strong></p>
+            </div>
+            <p style="font-size:13px; color:var(--text-soft);">
+                İade işlemleri için <b>İade Al</b> sayfasını kullanın.
+            </p>
+        </div>
+    </div>
+</div>
 {% endblock %}

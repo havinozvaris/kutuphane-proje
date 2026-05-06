@@ -244,7 +244,7 @@ def return_loan(id):
         conn.execute("UPDATE books SET status='Mevcut', borrower_id=NULL WHERE id=?", (loan['book_id'],))
         conn.commit()
     conn.close()
-    return redirect(url_for('loans'))
+    return redirect(url_for('iade_al'))
 
 @app.route('/iade-al')
 def iade_al():
