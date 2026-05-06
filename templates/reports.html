@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Raporlar{% endblock %}
+{% block topbar_title %}Raporlar{% endblock %}
+{% block footer_info %}İstatistik & Analiz{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="margin-bottom:24px;">
+  <!-- By Status -->
+  <div class="card" style="padding:28px;">
+    <div class="section-title" style="margin-bottom:20px;">📊 Kitap Durumu Dağılımı</div>
+    {% for row in by_status %}
+    {% set colors = {'Mevcut': 'var(--success)', 'Ödünçte': '#ea8c00', 'Rezerve': '#a855f7'} %}
+    {% set color = colors.get(row.status, 'var(--accent)') %}
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;font-weight:500;">
+        <span>{{ row.status }}</span>
+        <span style="color:{{ color }};font-weight:700;">{{ row.cnt }}</span>
+      </div>
+      <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:{{ (row.cnt / (by_status|sum(attribute='cnt')) * 100)|int }}%;background:{{ color }};border-radius:4px;transition:width 0.5s;"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- By Category -->
+  <div class="card" style="padding:28px;">
+    <div class="section-title" style="margin-bottom:20px;">🏷️ Kategori Dağılımı</div>
+    {% set cat_colors = ['var(--accent)', 'var(--accent3)', 'var(--accent4)', 'var(--accent2)', 'var(--accent5)', '#2196f3', '#00bcd4', '#8bc34a', '#ff5722'] %}
+    {% for row in by_category %}
+    {% set color = cat_colors[loop.index0 % cat_colors|length] %}
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;font-weight:500;">
+        <span>{{ row.category }}</span>
+        <span style="color:{{ color }};font-weight:700;">{{ row.cnt }}</span>
+      </div>
+      <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:{{ (row.cnt / (by_category|sum(attribute='cnt')) * 100)|int }}%;background:{{ color }};border-radius:4px;transition:width 0.5s;"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Top Borrowed -->
+<div class="section-header">
+  <div class="section-title">🏆 En Çok Ödünç Alınan Kitaplar</div>
+</div>
+<div class="card">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Kitap</th><th>Yazar</th><th>Ödünç Sayısı</th></tr>
+      </thead>
+      <tbody>
+      {% for book in top_borrowed %}
+      <tr>
+        <td>
+          <span style="font-family:'Syne',sans-serif;font-weight:800;color:{% if loop.index==1 %}#f59e0b{% elif loop.index==2 %}#94a3b8{% elif loop.index==3 %}#cd7f32{% else %}var(--text-soft){% endif %};">
+            {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+          </span>
+        </td>
+        <td><strong>{{ book.title }}</strong></td>
+        <td style="color:var(--text-soft);">{{ book.author }}</td>
+        <td>
+          <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--accent);">{{ book.times }}</span>
+          <span style="color:var(--text-soft);font-size:12px;"> kez</span>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-soft);">
+        Henüz ödünç verme işlemi yok.
+      </td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block topbar_title %}Dashboard{% endblock %}
+{% block footer_info %}{{ total_books }} kitap · {{ total_members }} üye{% endblock %}
+
+{% block content %}
+<div class="welcome-banner">
+  <div class="welcome-text">
+    <h2>Hoş geldiniz! 👋</h2>
+    <p>Kütüphane yönetim paneline genel bakış</p>
+  </div>
+  <div class="system-badge">
+    <span class="dot"></span> Sistem Aktif
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon violet">📚</div>
+    <div>
+      <div class="stat-value">{{ total_books }}</div>
+      <div class="stat-label">Toplam Kitap</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon teal">✅</div>
+    <div>
+      <div class="stat-value">{{ available }}</div>
+      <div class="stat-label">Mevcut</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange">📤</div>
+    <div>
+      <div class="stat-value">{{ loaned }}</div>
+      <div class="stat-label">Ödünç Verildi</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon pink">🔖</div>
+    <div>
+      <div class="stat-value">{{ reserved }}</div>
+      <div class="stat-label">Rezerve</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon sky">👥</div>
+    <div>
+      <div class="stat-value">{{ total_members }}</div>
+      <div class="stat-label">Toplam Üye</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card" style="padding:24px;">
+    <div class="section-header">
+      <div class="section-title">Aktif Ödünçler</div>
+      <a href="{{ url_for('loans') }}" class="btn btn-outline btn-sm">Tümünü Gör</a>
+    </div>
+    {% if recent_loans %}
+    <div class="table-wrapper">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Kitap</th><th>Üye</th><th>Tarih</th>
+      </tr></thead>
+      <tbody>
+      {% for loan in recent_loans %}
+      <tr>
+        <td style="color:var(--text-soft);font-size:12px;">{{ loan.id }}</td>
+        <td><strong>{{ loan.title }}</strong></td>
+        <td>{{ loan.name }}</td>
+        <td style="color:var(--text-soft);font-size:12px;">{{ loan.loan_date[:10] }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:32px;color:var(--text-soft);">
+      <div style="font-size:36px;margin-bottom:8px;">📭</div>
+      Henüz aktif ödünç yok
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card" style="padding:24px;">
+    <div class="section-header">
+      <div class="section-title">Hızlı İşlemler</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <a href="{{ url_for('add_book') }}" class="btn btn-primary" style="justify-content:center;">
+        ➕ Yeni Kitap Ekle
+      </a>
+      <a href="{{ url_for('add_member') }}" class="btn btn-outline" style="justify-content:center;">
+        👤 Yeni Üye Ekle
+      </a>
+      <a href="{{ url_for('loans') }}" class="btn" style="background:linear-gradient(135deg,#ffa94d,#e67e22);color:#fff;justify-content:center;box-shadow:0 4px 14px rgba(255,169,77,0.35);">
+        📤 Ödünç Ver
+      </a>
+      <a href="{{ url_for('reports') }}" class="btn" style="background:linear-gradient(135deg,#00d4aa,#00b894);color:#fff;justify-content:center;box-shadow:0 4px 14px rgba(0,212,170,0.35);">
+        📊 Raporları Gör
+      </a>
+    </div>
+
+    <div style="margin-top:24px;padding:16px;background:var(--bg);border-radius:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text-soft);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Durum Özeti</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        {% set total = total_books if total_books > 0 else 1 %}
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;">
+          <span>Mevcut</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:100px;height:6px;background:#e0e7ff;border-radius:3px;overflow:hidden;">
+              <div style="width:{{ (available/total*100)|int }}%;height:100%;background:var(--success);border-radius:3px;"></div>
+            </div>
+            <span style="color:var(--success);font-weight:600;">{{ available }}</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;">
+          <span>Ödünçte</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:100px;height:6px;background:#e0e7ff;border-radius:3px;overflow:hidden;">
+              <div style="width:{{ (loaned/total*100)|int }}%;height:100%;background:#ea8c00;border-radius:3px;"></div>
+            </div>
+            <span style="color:#ea8c00;font-weight:600;">{{ loaned }}</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;">
+          <span>Rezerve</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:100px;height:6px;background:#e0e7ff;border-radius:3px;overflow:hidden;">
+              <div style="width:{{ (reserved/total*100)|int }}%;height:100%;background:#a855f7;border-radius:3px;"></div>
+            </div>
+            <span style="color:#a855f7;font-weight:600;">{{ reserved }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
