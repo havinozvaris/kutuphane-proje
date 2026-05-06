@@ -1,46 +1,74 @@
 {% extends "base.html" %}
 {% block title %}Ödünç Ver{% endblock %}
-{% block topbar_title %}Kitap Ödünç Ver{% endblock %}
+{% block topbar_title %}Kitap Ödünç Verme İşlemi{% endblock %}
 
 {% block content %}
-<div class="odunc-ana-grid">
-    <div class="odunc-kart">
-        <div class="odunc-kart-ust"><span class="odunc-sayi">1</span> Ödünç Verme Formu</div>
-        <div class="odunc-kart-ic">
-            <form action="{{ url_for('add_loan') }}" method="POST">
-                <div class="form-group">
-                    <label>Kitap Seç *</label>
-                    <select name="book_id" required class="odunc-select">
-                        <option value="">-- Kitap seçiniz --</option>
-                        {% for kitap in available_books %}
-                            <option value="{{ kitap.id }}">{{ kitap.title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group" style="margin-top:15px;">
-                    <label>Üye Seç *</label>
-                    <select name="member_id" required class="odunc-select">
-                        <option value="">-- Üye seçiniz --</option>
-                        {% for uye in all_members %}
-                            <option value="{{ uye.id }}">{{ uye.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button type="submit" class="odunc-buton" style="margin-top:20px;">📖 Ödünç Ver</button>
-            </form>
+<div class="grid-2">
+    <div class="card" style="padding: 30px; min-height: 400px; display: flex; flex-direction: column; justify-content: center;">
+        <div class="section-header">
+            <div class="section-title">📩 Ödünç Verme Formu</div>
         </div>
+        
+        <form action="{{ url_for('add_loan') }}" method="POST">
+            <div class="form-group">
+                <label>Kitap Seç *</label>
+                <select name="book_id" required>
+                    <option value="">-- Mevcut kitap seçin --</option>
+                    {% for kitap in available_books %}
+                        <option value="{{ kitap.id }}">{{ kitap.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Üye Seç *</label>
+                <select name="member_id" required>
+                    <option value="">-- Üye seçin --</option>
+                    {% for uye in all_members %}
+                        <option value="{{ uye.id }}">{{ uye.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 30px; justify-content: center; padding: 18px; font-size: 16px;">
+                📖 Kitabı Ödünç Ver
+            </button>
+        </form>
     </div>
 
-    <div class="odunc-kart">
-        <div class="odunc-kart-ust"><span class="odunc-sayi">2</span> Özet</div>
-        <div class="odunc-kart-ic">
-            <div class="odunc-ozet-kutusu">
-                <p>Tarih: <strong>{{ now }}</strong></p>
+    <div class="card" style="padding: 30px; min-height: 400px;">
+        <div class="section-header">
+            <div class="section-title">📊 İşlem Özeti</div>
+        </div>
+        
+        <div style="background: var(--bg); padding: 25px; border-radius: 15px; border: 1px dashed var(--border); margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <span style="color: var(--text-soft); font-weight: 500;">Bugünün Tarihi:</span>
+                <strong style="color: var(--accent); font-family: 'Syne';">06.05.2026</strong>
             </div>
-            <p style="font-size:13px; color:var(--text-soft);">
-                İade işlemleri için <b>İade Al</b> sayfasını kullanın.
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-soft); font-weight: 500;">Durum:</span>
+                <span class="badge-pill green"><span class="dot"></span> Sistem Hazır</span>
+            </div>
+        </div>
+
+        <div style="padding: 15px; border-left: 4px solid var(--accent); background: #f8faff; border-radius: 0 10px 10px 0;">
+            <p style="font-size: 14px; color: var(--text-soft); line-height: 1.8;">
+                Bu panel üzerinden kütüphanenizdeki kitapların teslimatını gerçekleştirebilirsiniz. İşlem onaylandığında:
             </p>
+            <ul style="margin-top: 10px; font-size: 13px; color: var(--text-soft); padding-left: 20px;">
+                <li>Kitap durumu <b>"Ödünçte"</b> olarak güncellenir.</li>
+                <li>Üye üzerine aktif bir ödünç kaydı işlenir.</li>
+                <li>İade süreci başlatılmış olur.</li>
+            </ul>
         </div>
     </div>
+</div>
+
+<div class="card" style="margin-top: 25px; padding: 20px; display: flex; align-items: center; gap: 15px; background: linear-gradient(to right, #ffffff, #f0f4ff);">
+    <span style="font-size: 24px;">💡</span>
+    <p style="font-size: 13px; color: var(--text-soft);">
+        <b>İpucu:</b> Aradığınız kitap listede yoksa, başka bir üye üzerindedir veya rezerve edilmiştir. "Kitaplar" sayfasından kontrol edebilirsiniz.
+    </p>
 </div>
 {% endblock %}

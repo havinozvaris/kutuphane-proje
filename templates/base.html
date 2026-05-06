@@ -606,6 +606,66 @@ footer {
   color: var(--accent);
 }
 
+/* --- Sadece Ödünç Ver Sayfası İçin Eklenenler --- */
+.odunc-ana-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.odunc-ozel-kart {
+    background: #ffffff !important;
+    border-radius: 18px !important;
+    border: 1px solid #e0e7ff !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.odunc-ozel-ust {
+    background: #1a1060 !important; /* Sidebar rengin */
+    color: #ffffff !important;
+    padding: 18px 25px;
+    font-weight: 700;
+}
+
+.odunc-ozel-ic {
+    padding: 30px;
+}
+
+.odunc-form-select {
+    width: 100%;
+    padding: 14px;
+    border: 1.5px solid #e0e7ff;
+    border-radius: 12px;
+    background: #fff;
+    margin-top: 10px;
+    outline: none;
+}
+
+.odunc-mor-buton {
+    width: 100%;
+    background: linear-gradient(135deg, #6c47ff, #9b59ff) !important;
+    color: white !important;
+    border: none !important;
+    padding: 16px !important;
+    border-radius: 14px !important;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 20px;
+    box-shadow: 0 8px 16px rgba(108, 71, 255, 0.2);
+}
+
+.odunc-bilgi-kutusu {
+    background: #f8faff;
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px dashed #d5c8ff;
+}
+
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
