@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Kitaplar{% endblock %}
+{% block topbar_title %}Kitap Yönetimi{% endblock %}
+{% block footer_info %}{{ books|length }} kitap listeleniyor{% endblock %}
+
+{% block content %}
+<div class="section-header">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div class="section-title">📚 Kitap Listesi</div>
+    <form method="get" style="display:flex;">
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" name="q" value="{{ q or '' }}" placeholder="Kitap adı, yazar, ISBN...">
+      </div>
+    </form>
+  </div>
+  <!-- Yeni projenin route yapısına göre buton -->
+  <a href="{{ url_for('add_book') }}" class="btn btn-primary">➕ Yeni Kitap Ekle</a>
+</div>
+
+{% if error %}
+<div class="alert alert-error" style="margin-bottom: 20px; padding: 15px; background-color: #fee2e2; color: #dc2626; border-radius: 8px;">
+    ⚠️ {{ error }}
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Kitap Adı</th>
+          <th>Yazar</th>
+          <th>ISBN</th>
+          <th>Kategori</th>
+          <th>Yıl</th>
+          <th>Durum</th>
+          <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for book in books %}
+      <tr>
+        <td style="color:var(--text-soft);font-size:12px;">{{ book.id }}</td>
+        <td><strong>{{ book.title }}</strong></td>
+        <td>{{ book.author }}</td>
+        <td style="font-family:monospace;font-size:12px;color:var(--text-soft);">{{ book.isbn }}</td>
+        <td><span class="cat-pill">{{ book.category }}</span></td>
+        <td style="color:var(--text-soft);">{{ book.year or '—' }}</td>
+        <td>
+          {% if book.status == 'Mevcut' %}
+            <span class="status mevcut" style="color: #059669; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Mevcut</span>
+          {% elif book.status == 'Ödünçte' %}
+            <span class="status oduncte" style="color: #d97706; background: #fffbeb; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Ödünçte</span>
+          {% else %}
+            <span class="status rezerve" style="color: #2563eb; background: #eff6ff; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Rezerve</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="display:flex;gap:8px;">
+            <a href="{{ url_for('edit_book', id=book.id) }}" class="btn btn-outline btn-sm">✏️</a>
+            <form class="delete-form" method="post" action="{{ url_for('delete_book', id=book.id) }}" onsubmit="return confirm('Bu kitabı silmek istediğinize emin misiniz?')">
+              <button type="submit" class="btn btn-danger btn-sm" style="background:none; border:none; cursor:pointer;">🗑️</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="8" style="text-align:center;padding:48px;color:var(--text-soft);">
+          <div style="font-size:40px;margin-bottom:8px;">📭</div>
+          {% if q %}Arama sonucu bulunamadı.{% else %}Henüz kitap eklenmemiş.{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# Eğer bir kitabı düzenliyorsak (edit_book içinden gelindiyse) düzenleme formunu göster #}
+{% if books|length == 1 and request.endpoint == 'edit_book' %}
+<div style="margin-top: 30px; max-width: 600px;">
+    <div class="card" style="padding: 24px;">
+        <h3>✏️ Kitabı Düzenle</h3>
+        <form method="post">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <div class="form-group">
+                    <label>Kitap Adı</label>
+                    <input type="text" name="title" value="{{ books[0].title }}" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div class="form-group">
+                    <label>Yazar</label>
+                    <input type="text" name="author" value="{{ books[0].author }}" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div class="form-group">
+                    <label>ISBN</label>
+                    <input type="text" name="isbn" value="{{ books[0].isbn }}" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div class="form-group">
+                    <label>Yıl</label>
+                    <input type="number" name="year" value="{{ books[0].year }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+            </div>
+            <div style="margin-top: 15px;">
+                <button type="submit" class="btn btn-primary">💾 Güncelle</button>
+                <a href="{{ url_for('books') }}" class="btn btn-outline">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

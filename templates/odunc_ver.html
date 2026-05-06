@@ -1,104 +1,81 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <title>LibraryOS - Ödünç Ver</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <aside class="sidebar">
-            <div class="logo">
-                <h2>📚 LibraryOS</h2>
-                <p>Kütüphane Sistemi</p>
-            </div>
-            <nav class="menu">
-                <a href="/">🏠 Dashboard</a>
-                <a href="/kitaplar">📖 Kitaplar</a>
-                <a href="#">👤 Üyeler</a>
-                <a href="/odunc-ver" class="active">🔄 Ödünç Ver</a>
-                <a href="/iade-al">↩️ İade Al</a>
-                <a href="#">📊 Raporlar</a>
-            </nav>
-        </aside>
+{% extends "base.html" %}
+{% block title %}Ödünç Ver{% endblock %}
 
-        <main class="main-content">
-            <header class="topbar">
-                <h1>Kitap Ödünç Ver</h1>
-                <p>LibraryOS · Python Tabanlı Kütüphane Yönetim Sistemi</p>
-            </header>
+{% block content %}
+<main class="main-content">
+    <header class="topbar">
+        <h1>Kitap Ödünç Ver</h1>
+        <p>LibraryOS · Python Tabanlı Kütüphane Yönetim Sistemi</p>
+    </header>
 
-            <form action="/odunc-ver" method="POST" class="odunc-form-alani">
-                <div class="odunc-ana-grid">
-                    
-                    <div class="odunc-kart">
-                        <div class="odunc-kart-ust"><span class="odunc-sayi">1</span> Kitap Seçimi</div>
-                        <div class="odunc-kart-ic">
-                            <select name="kitap_adi" id="js-kitap-sec" required class="odunc-select">
-                                <option value="">Kitap seçiniz...</option>
-                                {% for kitap in kitaplar %}
-                                    <option value="{{ kitap.ad }}">{{ kitap.ad }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="odunc-kart">
-                        <div class="odunc-kart-ust"><span class="odunc-sayi">2</span> Üye Seçimi</div>
-                        <div class="odunc-kart-ic odunc-liste">
-                            {% for uye in uyeler %}
-                            <label class="odunc-uye-satir">
-                                <input type="radio" name="uye_adi" value="{{ uye.name }}" required>
-                                <div class="odunc-uye-ikon">{{ uye.name[0] }}</div>
-                                <div class="odunc-uye-bilgi">
-                                    <strong>{{ uye.name }}</strong>
-                                    <span>{{ uye.email }}</span>
-                                </div>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <div class="odunc-kart">
-                        <div class="odunc-kart-ust"><span class="odunc-sayi">3</span> İade Tarihi & Onay</div>
-                        <div class="odunc-kart-ic">
-                            <label class="odunc-etiket">İADE TARİHİ</label>
-                            <input type="date" name="tarih" id="js-tarih-sec" required class="odunc-select">
-                            
-                            <div class="odunc-ozet-kutusu">
-                                <span class="odunc-ozet-baslik">İŞLEM ÖZETİ</span>
-                                <div class="odunc-ozet-satir"><span>Kitap:</span> <span id="js-ozet-kitap">--</span></div>
-                                <div class="odunc-ozet-satir"><span>Üye:</span> <span id="js-ozet-uye">--</span></div>
-                                <div class="odunc-ozet-satir odunc-vurgu"><span>İade:</span> <span id="js-ozet-tarih">--</span></div>
-                            </div>
-
-                            <button type="submit" class="odunc-buton">📖 Kitabı Ödünç Ver</button>
-                        </div>
-                    </div>
-
+    <form action="{{ url_for('add_loan') }}" method="POST" class="odunc-form-alani">
+        <div class="odunc-ana-grid">
+            
+            <!-- 1. Kitap Seçimi -->
+            <div class="odunc-kart">
+                <div class="odunc-kart-ust"><span class="odunc-sayi">1</span> Kitap Seçimi</div>
+                <div class="odunc-kart-ic">
+                    <!-- Python'da 'book_id' beklediğimiz için name'i güncelledim -->
+                    <select name="book_id" id="js-kitap-sec" required class="odunc-select">
+                        <option value="">Kitap seçiniz...</option>
+                        {% for kitap in available_books %}
+                            <option value="{{ kitap.id }}" data-title="{{ kitap.title }}">{{ kitap.title }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-            </form>
-        </main>
-    </div>
+            </div>
 
-    <script>
-        const kInput = document.getElementById('js-kitap-sec');
-        const tInput = document.getElementById('js-tarih-sec');
-        const uRadios = document.querySelectorAll('input[name="uye_adi"]');
+            <!-- 2. Üye Seçimi -->
+            <div class="odunc-kart">
+                <div class="odunc-kart-ust"><span class="odunc-sayi">2</span> Üye Seçimi</div>
+                <div class="odunc-kart-ic odunc-liste">
+                    {% for uye in all_members %}
+                    <label class="odunc-uye-satir">
+                        <!-- Python'da 'member_id' beklediğimiz için name'i güncelledim -->
+                        <input type="radio" name="member_id" value="{{ uye.id }}" data-name="{{ uye.name }}" required>
+                        <div class="odunc-uye-ikon">{{ uye.name[0] }}</div>
+                        <div class="odunc-uye-bilgi">
+                            <strong>{{ uye.name }}</strong>
+                            <span>{{ uye.email }}</span>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
 
-        kInput.addEventListener('change', () => {
-            document.getElementById('js-ozet-kitap').innerText = kInput.value || "--";
+            <!-- 3. Onay -->
+            <div class="odunc-kart">
+                <div class="odunc-kart-ust"><span class="odunc-sayi">3</span> İşlem Özetı & Onay</div>
+                <div class="odunc-kart-ic">
+                    <div class="odunc-ozet-kutusu">
+                        <span class="odunc-ozet-baslik">İŞLEM ÖZETİ</span>
+                        <div class="odunc-ozet-satir"><span>Kitap:</span> <span id="js-ozet-kitap">--</span></div>
+                        <div class="odunc-ozet-satir"><span>Üye:</span> <span id="js-ozet-uye">--</span></div>
+                        <div class="odunc-ozet-satir odunc-vurgu"><span>Tarih:</span> <span>{{ now }}</span></div>
+                    </div>
+
+                    <button type="submit" class="odunc-buton">📖 Kitabı Ödünç Ver</button>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</main>
+
+<script>
+    // Özet alanını dinamik güncellemek için küçük script
+    const kSelect = document.getElementById('js-kitap-sec');
+    const uRadios = document.querySelectorAll('input[name="member_id"]');
+
+    kSelect.addEventListener('change', () => {
+        const selectedOption = kSelect.options[kSelect.selectedIndex];
+        document.getElementById('js-ozet-kitap').innerText = selectedOption.dataset.title || "--";
+    });
+
+    uRadios.forEach(r => {
+        r.addEventListener('change', () => {
+            document.getElementById('js-ozet-uye').innerText = r.dataset.name;
         });
-
-        uRadios.forEach(r => {
-            r.addEventListener('change', () => {
-                document.getElementById('js-ozet-uye').innerText = r.value;
-            });
-        });
-
-        tInput.addEventListener('input', () => {
-            document.getElementById('js-ozet-tarih').innerText = tInput.value || "--";
-        });
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}
