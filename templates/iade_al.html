@@ -1,69 +1,60 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <title>İade Alma</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
 
-<div class="main-content">
+{% block title %}İade Alma{% endblock %}
+{% block topbar_title %}İade Alma İşlemleri{% endblock %}
 
-    <header class="topbar">
-        <div>
-            <h1>↩️ İade Alma</h1>
-            <p>Ödünç verilen kitapların iade işlemlerini buradan yönetebilirsiniz.</p>
-        </div>
+{% block content %}
+<section class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon orange">📦</div>
+        <div class="stat-value">{{ loaned_books|length }}</div>
+        <div class="stat-label">Ödünçteki Kitap</div>
+    </div>
 
-        <a class="back-btn" href="/">🏠 Dashboard</a>
-    </header>
+    <div class="stat-card">
+        <div class="stat-icon teal">✅</div>
+        <div class="stat-value">Aktif</div>
+        <div class="stat-label">İade Sistemi</div>
+    </div>
+</section>
 
-    <section class="welcome-box">
-        <h2>İade İşlemleri</h2>
-        <p>Bu bölümde ödünç verilmiş kitaplar listelenir. İade edilen kitap, sistemde tekrar mevcut hale getirilir.</p>
-    </section>
+<div class="card" style="margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, #f8faff, #ffffff);">
+    <h3 style="margin-bottom: 8px;">İade İşlemleri</h3>
+    <p style="color: var(--text-soft); font-size: 14px;">Ödünç verilmiş kitaplar aşağıda listelenmiştir. İade edilen kitap sistemde otomatik olarak "Mevcut" hale gelir.</p>
+</div>
 
-    <section class="cards">
-        <div class="card">
-            <div class="icon orange">📦</div>
-            <h3>{{ loaned_books|length }}</h3>
-            <p>Ödünçteki Kitap</p>
-        </div>
+<div class="card">
+    <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+        <h3 style="font-size: 18px; font-weight: 700;">📚 Ödünç Verilen Kitaplar</h3>
+    </div>
 
-        <div class="card">
-            <div class="icon green">✅</div>
-            <h3>Aktif</h3>
-            <p>İade Sistemi</p>
-        </div>
-    </section>
-
-    <section class="welcome-box iade-listesi">
-        <h2>📚 Ödünç Verilen Kitaplar</h2>
-
+    <div style="padding: 20px;">
         {% if loaned_books|length == 0 %}
-            <div class="empty-box">
-                <h3>📭 Kayıt bulunamadı</h3>
+            <div style="text-align: center; padding: 40px; color: var(--text-soft);">
+                <div style="font-size: 40px; margin-bottom: 10px;">📭</div>
+                <h3>Kayıt bulunamadı</h3>
                 <p>Şu anda ödünç verilmiş kitap bulunmamaktadır.</p>
             </div>
         {% else %}
             {% for loan in loaned_books %}
-                <div class="iade-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #f8f9ff; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--border);">
                     <div>
-                        <h3>{{ loan.title }}</h3>
-                        <p>👤 Üye: {{ loan.member_name }}</p>
-                        <p>📅 Ödünç Tarihi: {{ loan.loan_date }}</p>
-                        <p>🔖 ISBN: {{ loan.isbn }}</p>
+                        <h3 style="margin-bottom: 8px; color: var(--text);">{{ loan.title }}</h3>
+                        <div style="font-size: 13px; color: var(--text-soft); display: grid; gap: 4px;">
+                            <span>👤 <strong>Üye:</strong> {{ loan.member_name }}</span>
+                            <span>📅 <strong>Ödünç Tarihi:</strong> {{ loan.loan_date }}</span>
+                            <span>🔖 <strong>ISBN:</strong> {{ loan.isbn }}</span>
+                        </div>
                     </div>
 
                     <form action="/loans/return/{{ loan.loan_id }}" method="POST">
-                        <button class="iade-btn" type="submit">İade Et</button>
+                        <button type="submit" class="btn-primary" style="padding: 10px 24px; font-size: 14px; width: auto;">
+                            ↩️ İade Et
+                        </button>
                     </form>
                 </div>
             {% endfor %}
         {% endif %}
-    </section>
-
+    </div>
 </div>
-
-</body>
-</html>
+{% endblock %}
