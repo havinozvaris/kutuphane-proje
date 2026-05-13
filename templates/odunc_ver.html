@@ -3,6 +3,42 @@
 {% block topbar_title %}Kitap Ödünç Verme İşlemi{% endblock %}
 
 {% block content %}
+{% if request.args.get('error') %}
+<div id="errorModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(5px);">
+    <div style="background: white; padding: 35px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); width: 90%; max-width: 420px; text-align: center; position: relative; animation: professionalPopup 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+        
+        <button onclick="closeModal()" style="position: absolute; top: 20px; right: 20px; background: #f8f9fa; border: none; font-size: 22px; cursor: pointer; color: #adb5bd; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s;">&times;</button>
+        
+        <div style="font-size: 60px; margin-bottom: 20px; filter: drop-shadow(0 10px 15px rgba(255,145,0,0.2));">⚠️</div>
+        <h3 style="color: #1a1d23; margin-bottom: 12px; font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;">İşlem Kısıtlandı</h3>
+        <p style="color: #64748b; font-size: 15px; line-height: 1.6; margin-bottom: 25px; padding: 0 10px;">
+            {{ request.args.get('error') }}
+        </p>
+        
+        <button onclick="closeModal()" style="background: #6366f1; color: white; border: none; padding: 15px; border-radius: 14px; font-weight: 700; cursor: pointer; width: 100%; font-size: 16px; box-shadow: 0 10px 20px rgba(99,102,241,0.2); transition: 0.3s;">Anladım, Kapat</button>
+    </div>
+</div>
+
+<style>
+    @keyframes professionalPopup {
+        from { transform: translateY(30px) scale(0.9); opacity: 0; }
+        to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    #errorModal button:hover { background: #4f46e5; transform: translateY(-2px); }
+</style>
+
+<script>
+    function closeModal() {
+        document.getElementById('errorModal').style.removeProperty('display');
+        document.getElementById('errorModal').style.display = 'none';
+        
+        const url = new URL(window.location);
+        url.searchParams.delete('error');
+        window.history.replaceState({}, '', url);
+    }
+</script>
+{% endif %}
+
 <div class="grid-2">
     <div class="card" style="padding: 30px; min-height: 400px; display: flex; flex-direction: column; justify-content: center;">
         <div class="section-header">
@@ -29,6 +65,12 @@
                     {% endfor %}
                 </select>
             </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label>💰 Alınan Depozito (TL) *</label>
+                <input type="number" name="deposit" placeholder="Örn: 100" min="0" required 
+                       style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text);">
+            </div>
             
             <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 30px; justify-content: center; padding: 18px; font-size: 16px;">
                 📖 Kitabı Ödünç Ver
@@ -54,12 +96,12 @@
 
         <div style="padding: 15px; border-left: 4px solid var(--accent); background: #f8faff; border-radius: 0 10px 10px 0;">
             <p style="font-size: 14px; color: var(--text-soft); line-height: 1.8;">
-                Bu panel üzerinden kütüphanenizdeki kitapların teslimatını gerçekleştirebilirsiniz. İşlem onaylandığında:
+                Bu panel üzerinden kütüphanenizdeki kitapların teslimatını gerçekleştirebilirsiniz.
             </p>
             <ul style="margin-top: 10px; font-size: 13px; color: var(--text-soft); padding-left: 20px;">
                 <li>Kitap durumu <b>"Ödünçte"</b> olarak güncellenir.</li>
-                <li>Üye üzerine aktif bir ödünç kaydı işlenir.</li>
-                <li>İade süreci başlatılmış olur.</li>
+                <li>Üye ödünç limiti (Maks. 3) kontrol edilir.</li>
+                <li><b>Depozito bedeli</b> kayıt altına alınır.</li>
             </ul>
         </div>
     </div>

@@ -40,6 +40,7 @@ def init_db():
         loan_date TEXT DEFAULT CURRENT_TIMESTAMP,
         return_date TEXT,
         status TEXT DEFAULT 'Aktif',
+        deposit INTEGER DEFAULT 0,
         FOREIGN KEY(book_id) REFERENCES books(id),
         FOREIGN KEY(member_id) REFERENCES members(id)
     )''')
@@ -80,7 +81,7 @@ def init_db():
         c.execute("UPDATE books SET status='Ödünçte', borrower_id=1 WHERE id=3")
         c.execute("UPDATE books SET status='Ödünçte', borrower_id=2 WHERE id=8")
         c.execute("UPDATE books SET status='Ödünçte', borrower_id=3 WHERE id=12")
-        c.execute("INSERT INTO loans (book_id, member_id) VALUES (3,1),(8,2),(12,3)")
+        c.execute("INSERT INTO loans (book_id, member_id, deposit) VALUES (3,1,0),(8,2,0),(12,3,0)")
         c.execute("UPDATE books SET status='Rezerve', borrower_id=4 WHERE id=6")
         c.execute("UPDATE books SET status='Rezerve', borrower_id=5 WHERE id=15")
 
@@ -108,7 +109,6 @@ def dashboard():
         reserved=reserved, total_members=total_members,
         active_loans=active_loans, recent_loans=recent_loans)
 
-# BOOKS
 @app.route('/books')
 def books():
     conn = get_db()
@@ -158,7 +158,6 @@ def delete_book(id):
     conn.close()
     return redirect(url_for('books'))
 
-# MEMBERS
 @app.route('/members')
 def members():
     conn = get_db()
@@ -211,7 +210,6 @@ def delete_member(id):
     conn.close()
     return redirect(url_for('members'))
 
-# LOANS
 @app.route('/loans')
 def loans():
     conn = get_db()
@@ -228,9 +226,29 @@ def loans():
 @app.route('/loans/add', methods=['POST'])
 def add_loan():
     d = request.form
+    member_id = d['member_id']
+    book_id = d['book_id']
+    deposit = int(d.get('deposit', 0))
+    
+    if deposit < 0:
+        deposit = 0
+        
     conn = get_db()
-    conn.execute("INSERT INTO loans (book_id, member_id) VALUES (?,?)", (d['book_id'], d['member_id']))
-    conn.execute("UPDATE books SET status='Ödünçte', borrower_id=? WHERE id=?", (d['member_id'], d['book_id']))
+    
+    loan_count = conn.execute(
+        "SELECT COUNT(*) FROM loans WHERE member_id = ? AND status = 'Aktif'", 
+        (member_id,)
+    ).fetchone()[0]
+
+    if loan_count >= 3:
+        conn.close()
+
+        return redirect(url_for('loans', error="Bu üye zaten 3 kitap almış! Daha fazla kitap alamaz."))
+
+    conn.execute("INSERT INTO loans (book_id, member_id, deposit) VALUES (?,?,?)", 
+                 (book_id, member_id, deposit))
+                 
+    conn.execute("UPDATE books SET status='Ödünçte', borrower_id=? WHERE id=?", (member_id, book_id))
     conn.commit()
     conn.close()
     return redirect(url_for('loans'))
@@ -250,7 +268,7 @@ def return_loan(id):
 def iade_al():
     conn = get_db()
     loaned_books = conn.execute("""
-        SELECT l.id as loan_id, b.title, b.isbn, m.name as member_name, l.loan_date 
+        SELECT l.id as loan_id, b.title, b.isbn, m.name as member_name, l.loan_date, l.deposit
         FROM loans l 
         JOIN books b ON l.book_id = b.id 
         JOIN members m ON l.member_id = m.id 
