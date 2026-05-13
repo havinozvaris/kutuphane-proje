@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 import os
+import hashlib
+import re
 
 app = Flask(__name__)
 app.secret_key = "libraryos_secret_key"
@@ -12,6 +14,10 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def sifre_hashle(sifre):
+    return hashlib.sha256(sifre.encode()).hexdigest()
 
 
 def admin_required():
@@ -47,7 +53,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
-            phone TEXT,
+            phone TEXT UNIQUE,
             joined_at TEXT DEFAULT CURRENT_TIMESTAMP,
             active INTEGER DEFAULT 1
         )
@@ -70,10 +76,11 @@ def init_db():
     c.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
-            phone TEXT,
-            password TEXT NOT NULL,
+            phone TEXT UNIQUE,
+            password_hash TEXT NOT NULL,
             role TEXT DEFAULT 'member',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
@@ -136,9 +143,16 @@ def init_db():
     c.execute("SELECT COUNT(*) FROM users WHERE role='admin'")
     if c.fetchone()[0] == 0:
         c.execute("""
-            INSERT INTO users (name, email, phone, password, role)
-            VALUES (?, ?, ?, ?, ?)
-        """, ("admin", "admin@libraryos.com", "", "admin123", "admin"))
+            INSERT INTO users (username, name, email, phone, password_hash, role)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            "admin",
+            "admin",
+            "admin@libraryos.com",
+            "",
+            sifre_hashle("admin123"),
+            "admin"
+        ))
 
     conn.commit()
     conn.close()
@@ -155,26 +169,25 @@ def login():
 
     if request.method == "POST":
         login_type = request.form.get("login_type")
-
         conn = get_db()
 
         if login_type == "admin":
-            username = request.form.get("admin_username")
-            password = request.form.get("admin_password")
+            username = request.form.get("admin_username", "").strip()
+            password = request.form.get("admin_password", "")
 
             user = conn.execute("""
                 SELECT * FROM users
-                WHERE name=? AND password=? AND role='admin'
-            """, (username, password)).fetchone()
+                WHERE username=? AND password_hash=? AND role='admin'
+            """, (username, sifre_hashle(password))).fetchone()
 
         else:
-            email = request.form.get("member_email")
-            password = request.form.get("member_password")
+            email = request.form.get("member_email", "").strip()
+            password = request.form.get("member_password", "")
 
             user = conn.execute("""
                 SELECT * FROM users
-                WHERE email=? AND password=? AND role='member'
-            """, (email, password)).fetchone()
+                WHERE email=? AND password_hash=? AND role='member'
+            """, (email, sifre_hashle(password))).fetchone()
 
         conn.close()
 
@@ -198,18 +211,88 @@ def register():
     error = None
 
     if request.method == "POST":
-        name = request.form.get("name")
-        email = request.form.get("email")
-        phone = request.form.get("phone")
-        password = request.form.get("password")
+        username = request.form.get("username", "").strip()
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        phone = request.form.get("phone", "").strip()
+        password = request.form.get("password", "")
+        password_repeat = request.form.get("password_repeat", "")
+
+        if not username or not name or not email or not phone or not password or not password_repeat:
+            error = "Lütfen tüm alanları doldurun."
+            return render_template("register.html", error=error)
+
+        if len(username) < 3:
+            error = "Kullanıcı adı en az 3 karakter olmalıdır."
+            return render_template("register.html", error=error)
+
+        if len(email) < 8:
+            error = "E-posta adresi çok kısa."
+            return render_template("register.html", error=error)
+
+        if len(email) > 80:
+            error = "E-posta adresi çok uzun."
+            return render_template("register.html", error=error)
+
+        if not re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email):
+            error = "Geçerli bir e-posta adresi girin."
+            return render_template("register.html", error=error)
+
+        if len(phone) < 10:
+            error = "Telefon numarası çok kısa."
+            return render_template("register.html", error=error)
+
+        if len(password) < 6:
+            error = "Şifre en az 6 karakter olmalıdır."
+            return render_template("register.html", error=error)
+
+        if password != password_repeat:
+            error = "Şifreler eşleşmiyor."
+            return render_template("register.html", error=error)
 
         conn = get_db()
 
+        existing_username = conn.execute(
+            "SELECT id FROM users WHERE username=?",
+            (username,)
+        ).fetchone()
+
+        if existing_username:
+            conn.close()
+            error = "Bu kullanıcı adı zaten kullanılıyor."
+            return render_template("register.html", error=error)
+
+        existing_email = conn.execute(
+            "SELECT id FROM users WHERE email=?",
+            (email,)
+        ).fetchone()
+
+        if existing_email:
+            conn.close()
+            error = "Bu e-posta zaten kayıtlı."
+            return render_template("register.html", error=error)
+
+        existing_phone = conn.execute(
+            "SELECT id FROM users WHERE phone=?",
+            (phone,)
+        ).fetchone()
+
+        if existing_phone:
+            conn.close()
+            error = "Bu telefon numarası zaten kayıtlı."
+            return render_template("register.html", error=error)
+
         try:
             conn.execute("""
-                INSERT INTO users (name, email, phone, password, role)
-                VALUES (?, ?, ?, ?, 'member')
-            """, (name, email, phone, password))
+                INSERT INTO users (username, name, email, phone, password_hash, role)
+                VALUES (?, ?, ?, ?, ?, 'member')
+            """, (
+                username,
+                name,
+                email,
+                phone,
+                sifre_hashle(password)
+            ))
 
             conn.execute("""
                 INSERT INTO members (name, email, phone)
@@ -223,7 +306,7 @@ def register():
 
         except sqlite3.IntegrityError:
             conn.close()
-            error = "Bu e-posta zaten kayıtlı!"
+            error = "Bu kullanıcı adı, e-posta veya telefon zaten kayıtlı."
 
     return render_template("register.html", error=error)
 
@@ -427,7 +510,7 @@ def add_member():
 
         except sqlite3.IntegrityError:
             conn.close()
-            return render_template("uye_ekle.html", error="Bu e-posta zaten kayıtlı!", member=None)
+            return render_template("uye_ekle.html", error="Bu e-posta veya telefon zaten kayıtlı!", member=None)
 
         conn.close()
         return redirect(url_for("members"))

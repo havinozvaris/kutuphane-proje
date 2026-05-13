@@ -16,44 +16,44 @@
         }
 
         .register-card{
-            width:440px;
+            width:430px;
             background:white;
-            padding:32px;
+            padding:28px;
             border-radius:24px;
             box-shadow:0 18px 50px rgba(0,0,0,0.08);
         }
 
         h1{
             color:#201063;
-            font-size:32px;
+            font-size:30px;
             margin-bottom:6px;
             font-weight:800;
         }
 
         .subtitle{
             color:#666;
-            font-size:16px;
-            margin-bottom:24px;
+            font-size:14px;
+            margin-bottom:22px;
         }
 
         label{
             display:block;
             font-weight:700;
             color:#201063;
-            margin-bottom:8px;
-            font-size:15px;
+            margin-bottom:7px;
+            font-size:14px;
         }
 
         .form-group{
-            margin-bottom:16px;
+            margin-bottom:14px;
         }
 
         input{
             width:100%;
-            padding:13px 15px;
+            padding:12px 14px;
             border:1.5px solid #dfe3f5;
             border-radius:14px;
-            font-size:15px;
+            font-size:14px;
             box-sizing:border-box;
             outline:none;
             transition:0.2s;
@@ -69,28 +69,28 @@
         }
 
         button{
-            margin-top:8px;
+            margin-top:6px;
             width:100%;
             border:none;
-            padding:15px;
-            border-radius:16px;
+            padding:13px;
+            border-radius:15px;
             background:linear-gradient(135deg,#6847ff,#9856ff);
             color:white;
-            font-size:17px;
+            font-size:16px;
             font-weight:800;
             cursor:pointer;
             transition:0.2s;
         }
 
         button:hover{
-            transform:translateY(-2px);
+            transform:translateY(-1px);
             opacity:0.96;
         }
 
         .login-link{
-            margin-top:22px;
+            margin-top:18px;
             text-align:center;
-            font-size:16px;
+            font-size:15px;
             color:#555;
         }
 
@@ -107,11 +107,11 @@
         .error{
             background:#ffecec;
             color:#c0392b;
-            padding:12px;
+            padding:11px;
             border-radius:12px;
-            margin-bottom:18px;
+            margin-bottom:16px;
             font-weight:700;
-            font-size:14px;
+            font-size:13px;
         }
     </style>
 </head>
@@ -121,6 +121,7 @@
 <div class="register-card">
 
     <h1>Kayıt Ol</h1>
+
     <p class="subtitle">
         Üye hesabı oluşturmak için bilgilerinizi girin.
     </p>
@@ -132,35 +133,86 @@
     <form method="POST">
 
         <div class="form-group">
+            <label>Kullanıcı Adı</label>
+
+            <input
+                type="text"
+                name="username"
+                placeholder="Kullanıcı adı girin"
+                minlength="3"
+                maxlength="20"
+                required
+            >
+        </div>
+
+        <div class="form-group">
             <label>Ad Soyad</label>
-            <input type="text"
-                   name="name"
-                   placeholder="Adınızı ve soyadınızı girin"
-                   required>
+
+            <input
+                type="text"
+                name="name"
+                placeholder="Adınızı ve soyadınızı girin"
+                minlength="3"
+                maxlength="50"
+                required
+            >
         </div>
 
         <div class="form-group">
             <label>E-posta</label>
-            <input type="email"
-                   name="email"
-                   placeholder="ornek@email.com"
-                   required>
+
+            <input
+                type="email"
+                name="email"
+                placeholder="ornek@email.com"
+                maxlength="100"
+                required
+            >
         </div>
 
         <div class="form-group">
             <label>Telefon Numarası</label>
-            <input type="text"
-                   name="phone"
-                   placeholder="05XX XXX XX XX"
-                   required>
+
+            <input
+                type="tel"
+                name="phone"
+                placeholder="05XXXXXXXXX"
+                pattern="[0-9]{10,11}"
+                maxlength="11"
+                inputmode="numeric"
+                oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                required
+            >
         </div>
 
         <div class="form-group">
             <label>Şifre</label>
-            <input type="password"
-                   name="password"
-                   placeholder="Şifrenizi girin"
-                   required>
+
+            <input
+                type="password"
+                name="password"
+                placeholder="En az 6 karakter"
+                minlength="6"
+                maxlength="30"
+                pattern="^\S+$"
+                title="Şifre boşluk içeremez"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label>Şifre Tekrar</label>
+
+            <input
+                type="password"
+                name="password_repeat"
+                placeholder="Şifrenizi tekrar girin"
+                minlength="6"
+                maxlength="30"
+                pattern="^\S+$"
+                title="Şifre boşluk içeremez"
+                required
+            >
         </div>
 
         <button type="submit">
