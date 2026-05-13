@@ -14,7 +14,7 @@
       </div>
     </form>
   </div>
-  <!-- Yeni projenin route yapısına göre buton -->
+  
   <a href="{{ url_for('add_book') }}" class="btn btn-primary">➕ Yeni Kitap Ekle</a>
 </div>
 
@@ -58,12 +58,24 @@
           {% endif %}
         </td>
         <td>
-          <div style="display:flex;gap:8px;">
-            <a href="{{ url_for('edit_book', id=book.id) }}" class="btn btn-outline btn-sm">✏️</a>
-            <form class="delete-form" method="post" action="{{ url_for('delete_book', id=book.id) }}" onsubmit="return confirm('Bu kitabı silmek istediğinize emin misiniz?')">
-              <button type="submit" class="btn btn-danger btn-sm" style="background:none; border:none; cursor:pointer;">🗑️</button>
-            </form>
-          </div>
+         {% if session['role'] == 'admin' %}
+
+    <div style="display:flex;gap:8px;">
+        <a href="{{ url_for('edit_book', id=book.id) }}">✏️</a>
+        <form method="post" action="{{ url_for('delete_book', id=book.id) }}">
+            <button type="submit">🗑️</button>
+        </form>
+    </div>
+
+{% else %}
+
+    {% if book.status == 'Mevcut' %}
+        <a href="/borrow/{{ book.id }}">📥 Ödünç Al</a>
+    {% else %}
+        <span>Alınamaz</span>
+    {% endif %}
+
+{% endif %}
         </td>
       </tr>
       {% else %}

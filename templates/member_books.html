@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Kitaplarım</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f4f5ff;
+    margin:0;
+}
+
+.container{
+    padding:40px;
+}
+
+h1{
+    color:#1b1464;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+th{
+    background:#17095e;
+    color:white;
+    padding:12px;
+    text-align:left;
+}
+
+td{
+    padding:12px;
+    border-bottom:1px solid #eee;
+}
+
+.status{
+    padding:5px 10px;
+    border-radius:8px;
+    font-size:12px;
+}
+
+.mevcut{background:#d7ffe4;color:#00a651;}
+.oduncte{background:#fff4d7;color:#a67c00;}
+.rezerve{background:#ffd7d7;color:#a60000;}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>📚 Tüm Kitaplar</h1>
+
+<table>
+<thead>
+<tr>
+    <th>#</th>
+    <th>Kitap</th>
+    <th>Yazar</th>
+    <th>Kategori</th>
+    <th>Yıl</th>
+    <th>Durum</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for book in books %}
+<tr>
+    <td>{{ book.id }}</td>
+    <td><b>{{ book.title }}</b></td>
+    <td>{{ book.author }}</td>
+    <td>{{ book.category }}</td>
+    <td>{{ book.year }}</td>
+    <td>
+        {% if book.status == 'Mevcut' %}
+            <span class="status mevcut">Mevcut</span>
+        {% elif book.status == 'Ödünçte' %}
+            <span class="status oduncte">Ödünçte</span>
+        {% else %}
+            <span class="status rezerve">Rezerve</span>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+
+</div>
+
+</body>
+</html>

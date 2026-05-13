@@ -8,7 +8,6 @@
 
 <style>
 
-
 *{
     margin:0;
     padding:0;
@@ -16,14 +15,11 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
-
 body{
     background:#f4f5ff;
     display:flex;
     color:#1b1464;
 }
-
-/* SIDEBAR */
 
 .sidebar{
     width:280px;
@@ -42,10 +38,6 @@ body{
     font-size:42px;
     font-weight:800;
     margin-bottom:5px;
-}
-
-.logo span{
-    color:white;
 }
 
 .logo-text{
@@ -88,8 +80,6 @@ body{
     opacity:.7;
 }
 
-/* MAIN */
-
 .main{
     margin-left:280px;
     width:calc(100% - 280px);
@@ -116,8 +106,6 @@ body{
     font-weight:600;
 }
 
-/* CARDS */
-
 .cards{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
@@ -141,8 +129,6 @@ body{
     font-size:18px;
     opacity:.8;
 }
-
-/* TABLE */
 
 .table-card{
     background:white;
@@ -214,40 +200,44 @@ table td{
     }
 
 }
+
 </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
-
 <div class="sidebar">
 
     <div>
-        <div class="logo">📚 <span>LibraryOS</span></div>
+        <div class="logo">📚 LibraryOS</div>
         <div class="logo-text">Üye Paneli</div>
 
         <div class="menu">
-             <a href="{{ url_for('uye_dashboard') }}" class="active">
-        🏠 <span>Dashboard</span>
-    </a>
-            <a href="{{ url_for('books') }}">
-        📚 <span>Kitaplarım</span>
-    </a>
+
+            <a href="{{ url_for('uye_dashboard') }}" class="active">
+                🏠 <span>Ana Sayfa</span>
+            </a>
+
+            <a href="{{ url_for('uye_kitaplar') }}">
+                📚 <span>Kitaplarım</span>
+            </a>
+
+         
+
            
-            <a href="#">🔖 <span>Rezervasyonlar</span></a>
-            <a href="#">👤 <span>Profilim</span></a>
-            <a href="/logout">🚪 <span>Çıkış</span></a>
+
+            <a href="{{ url_for('logout') }}">
+                🚪 <span>Çıkış</span>
+            </a>
+
         </div>
     </div>
 
     <div class="bottom-user">
-        <h3>{{ session['user_name'] }}</h3>
+        <h3>{{ session['name'] }}</h3>
         <p>Kütüphane Üyesi</p>
     </div>
 
 </div>
-
-<!-- MAIN -->
 
 <div class="main">
 
@@ -262,22 +252,20 @@ table td{
         </div>
     </div>
 
-    <!-- CARDS -->
-
     <div class="cards">
 
         <div class="card">
-            <h2>4</h2>
+            <h2>{{ stats.total }}</h2>
             <p>Aldığım Kitap</p>
         </div>
 
         <div class="card">
-            <h2>2</h2>
+            <h2>{{ stats.active }}</h2>
             <p>Aktif Ödünç</p>
         </div>
 
         <div class="card">
-            <h2>1</h2>
+            <h2>{{ stats.reserved }}</h2>
             <p>Rezervasyon</p>
         </div>
 
@@ -288,14 +276,12 @@ table td{
 
     </div>
 
-    <!-- TABLE -->
-
     <div class="table-card">
 
         <div class="table-header">
             <h2>Kitaplarım</h2>
 
-            <a href="#" class="btn">
+            <a href="{{ url_for('uye_dashboard') }}" class="btn">
                 Tümünü Gör
             </a>
         </div>
@@ -313,27 +299,18 @@ table td{
 
             <tbody>
 
+                {% for book in user_books %}
+
                 <tr>
-                    <td>1</td>
-                    <td>Küçük Prens</td>
-                    <td>2026-05-01</td>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.loan_date }}</td>
                     <td>
-                        <span class="badge">
-                            Aktif
-                        </span>
+                        <span class="badge">{{ book.status }}</span>
                     </td>
                 </tr>
 
-                <tr>
-                    <td>2</td>
-                    <td>Sefiller</td>
-                    <td>2026-05-03</td>
-                    <td>
-                        <span class="badge">
-                            Aktif
-                        </span>
-                    </td>
-                </tr>
+                {% endfor %}
 
             </tbody>
 

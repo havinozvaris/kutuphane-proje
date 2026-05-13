@@ -25,7 +25,7 @@ def admin_required():
         return redirect(url_for("login"))
 
     if session.get("role") != "admin":
-        return redirect(url_for("member_home"))
+        return redirect(url_for("uye_dashboard"))
 
     return None
 
@@ -195,11 +195,12 @@ def login():
             session["user_id"] = user["id"]
             session["name"] = user["name"]
             session["role"] = user["role"]
+            session["email"] = user["email"]
 
             if user["role"] == "admin":
                 return redirect(url_for("dashboard"))
 
-            return redirect(url_for("member_home"))
+            return redirect(url_for("uye_dashboard"))
 
         error = "Kullanıcı adı/e-posta veya şifre hatalı!"
 
@@ -317,12 +318,38 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/member-home")
-def member_home():
+# --- ÜYE PANELİ ---
+@app.route("/uye")
+def uye_dashboard():
     if "user_id" not in session:
         return redirect(url_for("login"))
+    
+    conn = get_db()
+    # Giriş yapan üyenin bilgilerini members tablosundan e-posta ile eşleştiriyoruz
+    member = conn.execute("SELECT id FROM members WHERE email=?", (session.get("email"),)).fetchone()
+    
+    stats = {"total": 0, "active": 0, "reserved": 0}
+    user_books = []
 
-    return render_template("member_home.html")
+
+    if member:
+        m_id = member["id"]
+        # İstatistikleri çekelim
+        stats["total"] = conn.execute("SELECT COUNT(*) FROM loans WHERE member_id=?", (m_id,)).fetchone()[0]
+        stats["active"] = conn.execute("SELECT COUNT(*) FROM loans WHERE member_id=? AND status='Aktif'", (m_id,)).fetchone()[0]
+        stats["reserved"] = conn.execute("SELECT COUNT(*) FROM books WHERE borrower_id=? AND status='Rezerve'", (m_id,)).fetchone()[0]
+        
+        # Tablo için üyenin aktif kitaplarını çekelim
+        user_books = conn.execute("""
+            SELECT b.title, l.loan_date, l.status 
+            FROM loans l 
+            JOIN books b ON l.book_id = b.id 
+            WHERE l.member_id=? AND l.status='Aktif'
+        """, (m_id,)).fetchall()
+        
+    conn.close()
+    return render_template("member_home.html", stats=stats, user_books=user_books)
+
 
 
 @app.route("/dashboard")
@@ -366,9 +393,9 @@ def dashboard():
 
 @app.route("/books")
 def books():
-    kontrol = admin_required()
-    if kontrol:
-        return kontrol
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
     conn = get_db()
     q = request.args.get("q", "")
@@ -382,7 +409,6 @@ def books():
 
     conn.close()
     return render_template("books.html", books=books, q=q)
-
 
 @app.route("/books/add", methods=["GET", "POST"])
 def add_book():
@@ -742,10 +768,32 @@ def reports():
 
 
 
-@app.route("/uye")
-def uye_dashboard():
-    return render_template("member_home.html")
 
+
+   
+
+# --- ÜYE KİTAPLARIM SAYFASI ---
+@app.route("/uye/kitaplar")
+def uye_kitaplar():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+
+    # TÜM KİTAPLAR (admin panelindeki kitaplar)
+    books = conn.execute("""
+        SELECT *
+        FROM books
+        ORDER BY id DESC
+    """).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "member_books.html",
+        books=books
+    )
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=5000)
