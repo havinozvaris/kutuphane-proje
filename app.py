@@ -658,6 +658,11 @@ def reports():
     )
 
 
+
+@app.route("/uye")
+def uye_dashboard():
+    return render_template("member_home.html")
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=5000)
