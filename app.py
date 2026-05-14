@@ -436,12 +436,12 @@ def add_book():
 
         except sqlite3.IntegrityError:
             conn.close()
-            return render_template("books.html", error="Bu ISBN zaten kayıtlı!", books=[])
+            return render_template("add_book.html", error="Bu ISBN zaten kayıtlı!")
 
         conn.close()
         return redirect(url_for("books"))
 
-    return render_template("books.html", books=[], error=None)
+    return render_template("add_book.html", error=None)
 
 
 @app.route("/books/edit/<int:id>", methods=["GET", "POST"])

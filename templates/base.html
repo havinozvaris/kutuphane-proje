@@ -23,13 +23,13 @@ body { font-family: var(--font-main); background: var(--bg); color: var(--text);
 .main { margin-left: 280px; flex: 1; display: flex; flex-direction: column; width: calc(100% - 280px); }
 .page-content { padding: 32px; animation: fadeIn 0.4s ease; }
 
-/* HEADER */
+/* HEADER (TOPBAR) */
 .topbar { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
     padding: 20px 32px; 
-    background: white; /* Daha net bir görünüm için beyaz yaptık */
+    background: white;
     border-bottom: 1px solid var(--border);
     margin-bottom: 20px;
 }
@@ -39,7 +39,7 @@ body { font-family: var(--font-main); background: var(--bg); color: var(--text);
     gap: 15px; 
 }
 
-
+/* DASHBOARD ELEMANLARI */
 .welcome-banner {
     background: linear-gradient(135deg, var(--sidebar), var(--accent));
     padding: 40px; border-radius: var(--radius); color: #fff;
@@ -54,36 +54,78 @@ body { font-family: var(--font-main); background: var(--bg); color: var(--text);
 .stat-value { font-size: 30px; font-weight: 800; color: var(--text); }
 .stat-label { font-size: 13px; color: var(--text-soft); font-weight: 600; }
 
-
 .violet { background: #f5f3ff; } .teal { background: #f0fdf4; } .orange { background: #fff7ed; } .pink { background: #fff1f2; } .sky { background: #f0f9ff; }
 
-
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+/* GENEL KART VE INPUT */
 .card { background: var(--card); border-radius: var(--radius); padding: 24px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 20px; }
-
 input, select { width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 12px; font-family: var(--font-main); outline: none; margin-top: 8px; }
 
 /* BUTONLAR */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, var(--accent), #9b59ff); color: #fff; padding: 14px 24px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; text-decoration: none; transition: 0.2s; }
 .btn:hover { transform: translateY(-2px); }
 
-
+/* TABLO */
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 thead th { text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-soft); border-bottom: 2px solid var(--bg); }
 tbody td { padding: 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
 
-.avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 13px; background: linear-gradient(135deg, var(--accent), #9b59ff); }
+/* LİSTE SAYFALARI İÇİN SİHİRLİ TOOLBAR (BURASI ÇOK ÖNEMLİ) */
+.custom-toolbar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: #fff !important;
+    padding: 15px 25px !important;
+    border-radius: var(--radius) !important;
+    margin-bottom: 25px !important;
+    box-shadow: 0 4px 24px rgba(108,71,255,0.08) !important;
+    border: 1px solid var(--border) !important;
+}
 
+.toolbar-left-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+    flex: 1 !important;
+}
 
+.search-wrapper {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 350px !important;
+}
+
+.search-wrapper input {
+    margin-top: 0 !important; /* Genel inputlardaki 8px boşluğu burada siliyoruz */
+    padding-left: 40px !important;
+    background: #f8faff !important;
+    border: 1.5px solid var(--border) !important;
+}
+
+.search-wrapper .search-icon {
+    position: absolute !important;
+    left: 15px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 5 !important;
+    font-size: 16px !important;
+}
+
+.custom-toolbar .btn {
+    width: auto !important;
+    margin: 0 !important;
+    padding: 12px 25px !important;
+    white-space: nowrap !important;
+}
+
+/* SIDEBAR LOGO VE FOOTER */
 .sidebar-logo { padding: 30px 20px; display: flex; align-items: center; gap: 10px; color: #fff; }
 nav a { padding: 12px 20px; color: rgba(255,255,255,0.7); text-decoration: none; display: flex; align-items: center; border-radius: 10px; margin: 2px 10px; }
 nav a.active { background: rgba(255,255,255,0.15); color: #fff; }
-.nav-icon { font-size: 18px; margin-right: 10px; }
-
+.avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 13px; background: linear-gradient(135deg, var(--accent), #9b59ff); }
 .sidebar-footer { margin-top: auto; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
 
 footer { padding: 24px 32px; border-top: 1px solid var(--border); color: var(--text-soft); font-size: 13px; display: flex; justify-content: space-between; }
-
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -100,22 +142,22 @@ footer { padding: 24px 32px; border-top: 1px solid var(--border); color: var(--t
   
   <nav>
     <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint=='dashboard' %}active{% endif %}">
-      <span class="nav-icon">🏠</span> Anasayfa
+      🏠 Anasayfa
     </a>
     <a href="{{ url_for('books') }}" class="{% if request.endpoint in ['books','add_book','edit_book'] %}active{% endif %}">
-      <span class="nav-icon">📚</span> Kitaplar
+      📚 Kitaplar
     </a>
     <a href="{{ url_for('members') }}" class="{% if request.endpoint in ['members','add_member','edit_member'] %}active{% endif %}">
-      <span class="nav-icon">👥</span> Üyeler
+      👥 Üyeler
     </a>
     <a href="{{ url_for('loans') }}" class="{% if request.endpoint=='loans' %}active{% endif %}">
-      <span class="nav-icon">↕️</span> Ödünç Ver
+      ↕️ Ödünç Ver
     </a>
     <a href="{{ url_for('iade_al') }}" class="{% if request.endpoint=='iade_al' %}active{% endif %}"> 
-      <span class="nav-icon">↩️</span> İade Al 
+      ↩️ İade Al 
     </a>
     <a href="{{ url_for('reports') }}" class="{% if request.endpoint=='reports' %}active{% endif %}">
-      <span class="nav-icon">📊</span> Raporlar
+      📊 Raporlar
     </a>
   </nav>
 
