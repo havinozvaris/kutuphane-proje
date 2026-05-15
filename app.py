@@ -766,13 +766,6 @@ def reports():
         top_borrowed=top_borrowed
     )
 
-
-
-
-
-   
-
-# --- ÜYE KİTAPLARIM SAYFASI ---
 @app.route("/uye/kitaplar")
 def uye_kitaplar():
 
@@ -781,19 +774,184 @@ def uye_kitaplar():
 
     conn = get_db()
 
-    # TÜM KİTAPLAR (admin panelindeki kitaplar)
+    member = conn.execute(
+        "SELECT id FROM members WHERE email=?",
+        (session["email"],)
+    ).fetchone()
+
+    member_id = member["id"] if member else None
+
     books = conn.execute("""
-        SELECT *
-        FROM books
-        ORDER BY id DESC
+        SELECT b.*,
+               l.id AS loan_id
+        FROM books b
+        LEFT JOIN loans l 
+        ON b.id = l.book_id AND l.status='Aktif'
+        ORDER BY b.id DESC
     """).fetchall()
 
     conn.close()
 
+    return render_template("member_books.html",
+                           books=books,
+                           member_id=member_id)
+
+
+@app.route("/uye_profil")
+def uye_profil():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+
+    user = conn.execute(
+        "SELECT * FROM users WHERE id = ?",
+        (session["user_id"],)
+    ).fetchone()
+
+    # member id bul
+    member = conn.execute(
+        "SELECT id FROM members WHERE email=?",
+        (user["email"],)
+    ).fetchone()
+
+    book_count = 0
+
+    if member:
+        book_count = conn.execute(
+            "SELECT COUNT(*) as cnt FROM loans WHERE member_id=? AND status='Aktif'",
+            (member["id"],)
+        ).fetchone()["cnt"]
+
+    conn.close()
+
     return render_template(
-        "member_books.html",
-        books=books
+        "uye_profil.html",
+        user=user,
+        book_count=book_count,
+        last_login=session.get("last_login", "Bilinmiyor")
     )
+
+
+
+
+@app.route("/sifre_degistir", methods=["POST"])
+def sifre_degistir():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    eski = request.form["old_password"]
+    yeni = request.form["new_password"]
+
+    conn = get_db()
+
+    user = conn.execute(
+        "SELECT password_hash FROM users WHERE id = ?",
+        (session["user_id"],)
+    ).fetchone()
+
+    if user["password_hash"] != sifre_hashle(eski):
+        conn.close()
+        return "Eski şifre yanlış"
+
+    conn.execute(
+        "UPDATE users SET password_hash=? WHERE id=?",
+        (sifre_hashle(yeni), session["user_id"])
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("uye_profil")) 
+
+
+
+
+@app.route("/odunc-al/<int:book_id>", methods=["POST"])
+def odunc_al(book_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+
+    book = conn.execute(
+        "SELECT * FROM books WHERE id=?",
+        (book_id,)
+    ).fetchone()
+
+    if not book or book["status"] != "Mevcut":
+        conn.close()
+        return "Bu kitap ödünç alınamaz"
+
+    member = conn.execute(
+        "SELECT id FROM members WHERE email=?",
+        (session["email"],)
+    ).fetchone()
+
+    if not member:
+        conn.close()
+        return "Üye bulunamadı"
+
+    conn.execute("""
+        INSERT INTO loans (book_id, member_id, status, deposit)
+        VALUES (?, ?, 'Aktif', 0)
+    """, (book_id, member["id"]))
+
+    conn.execute("""
+        UPDATE books
+        SET status='Ödünçte', borrower_id=?
+        WHERE id=?
+    """, (member["id"], book_id))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("uye_kitaplar"))
+
+
+
+
+
+@app.route("/iade-et/<int:loan_id>", methods=["POST"])
+def iade_et(loan_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+
+    loan = conn.execute(
+        "SELECT * FROM loans WHERE id=?",
+        (loan_id,)
+    ).fetchone()
+
+    if not loan:
+        conn.close()
+        return "Kayıt bulunamadı"
+
+    conn.execute("""
+        UPDATE loans
+        SET status='İade', return_date=CURRENT_TIMESTAMP
+        WHERE id=?
+    """, (loan_id,))
+
+    conn.execute("""
+        UPDATE books
+        SET status='Mevcut', borrower_id=NULL
+        WHERE id=?
+    """, (loan["book_id"],))
+
+    conn.commit()
+    conn.close()
+
+
+    return redirect(url_for("uye_kitaplar"))
+
+
+
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=5000)

@@ -4,15 +4,66 @@
 <meta charset="UTF-8">
 <title>Kitaplarım</title>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
 body{
     font-family: Arial;
     background:#f4f5ff;
     margin:0;
+    display:flex;
 }
 
+/* SIDEBAR */
+.sidebar{
+    width:280px;
+    height:100vh;
+    background:#17095e;
+    color:white;
+    position:fixed;
+    left:0;
+    top:0;
+    padding:30px 20px;
+    display:flex;
+    flex-direction:column;
+}
+
+.logo{
+    font-size:28px;
+    font-weight:800;
+    margin-bottom:5px;
+}
+
+.logo-text{
+    font-size:16px;
+    opacity:.8;
+    margin-bottom:40px;
+}
+
+.menu{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.menu a{
+    text-decoration:none;
+    color:white;
+    padding:14px 16px;
+    border-radius:12px;
+    transition:.3s;
+}
+
+.menu a:hover,
+.menu a.active{
+    background:rgba(255,255,255,0.15);
+}
+
+/* MAIN */
 .container{
+    margin-left:280px;
     padding:40px;
+    width:calc(100% - 280px);
 }
 
 h1{
@@ -51,8 +102,27 @@ td{
 </style>
 
 </head>
+
 <body>
 
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+    <div>
+        <div class="logo">📚 LibraryOS</div>
+        <div class="logo-text">Üye Paneli</div>
+
+        <div class="menu">
+            <a href="{{ url_for('uye_dashboard') }}">🏠 Ana Sayfa</a>
+            <a href="{{ url_for('uye_kitaplar') }}" class="active">📚 Kitaplar</a>
+            <a href="{{ url_for('uye_profil') }}">👤 Profil</a>
+            <a href="{{ url_for('logout') }}">🚪 Çıkış</a>
+        </div>
+    </div>
+
+</div>
+
+<!-- MAIN -->
 <div class="container">
 
 <h1>📚 Tüm Kitaplar</h1>
@@ -65,6 +135,7 @@ td{
     <th>Yazar</th>
     <th>Kategori</th>
     <th>Yıl</th>
+    <th>ISBN</th>
     <th>Durum</th>
 </tr>
 </thead>
@@ -73,20 +144,51 @@ td{
 
 {% for book in books %}
 <tr>
+
     <td>{{ book.id }}</td>
     <td><b>{{ book.title }}</b></td>
     <td>{{ book.author }}</td>
     <td>{{ book.category }}</td>
     <td>{{ book.year }}</td>
+    <td>{{ book.isbn }}</td>
+
     <td>
-        {% if book.status == 'Mevcut' %}
-            <span class="status mevcut">Mevcut</span>
-        {% elif book.status == 'Ödünçte' %}
-            <span class="status oduncte">Ödünçte</span>
-        {% else %}
-            <span class="status rezerve">Rezerve</span>
-        {% endif %}
+{% if book.status == 'Mevcut' %}
+
+    <span class="status mevcut">Mevcut</span>
+
+    <form method="POST"
+          action="{{ url_for('odunc_al', book_id=book.id) }}"
+          onsubmit="return confirmOdunc(event, this);"
+          style="display:inline;">
+
+        <button type="submit">📥 Ödünç Al</button>
+    </form>
+
+{% elif book.status == 'Ödünçte' and book.loan_id %}
+
+    <span class="status oduncte">Ödünçte</span>
+
+    {% if member_id %}
+
+        <form method="POST"
+              action="{{ url_for('iade_et', loan_id=book.loan_id) }}"
+              onsubmit="return confirmIade(event, this);"
+              style="display:inline;">
+
+            <button type="submit">↩ İade Et</button>
+        </form>
+
+    {% endif %}
+
+{% else %}
+
+    <span class="status rezerve">Rezerve</span>
+
+{% endif %}
+
     </td>
+
 </tr>
 {% endfor %}
 
@@ -94,6 +196,43 @@ td{
 </table>
 
 </div>
+
+<!-- SWEETALERT JS -->
+<script>
+
+function confirmOdunc(e, form){
+    e.preventDefault();
+
+    Swal.fire({
+        title: "Ödünç almak istiyor musun?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Evet",
+        cancelButtonText: "Hayır"
+    }).then((result) => {
+        if(result.isConfirmed){
+            form.submit();
+        }
+    });
+}
+
+function confirmIade(e, form){
+    e.preventDefault();
+
+    Swal.fire({
+        title: "Kitabı iade etmek istiyor musun?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Evet iade et",
+        cancelButtonText: "Vazgeç"
+    }).then((result) => {
+        if(result.isConfirmed){
+            form.submit();
+        }
+    });
+}
+
+</script>
 
 </body>
 </html>

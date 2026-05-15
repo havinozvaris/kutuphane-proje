@@ -216,3 +216,31 @@ body {
     color: var(--text-gray);
     border: 2px dashed #e0e7ff;
 }
+
+
+
+
+.logout-area{
+    margin-top:auto;
+    padding-top:20px;
+}
+
+.logout-area a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+
+    background:#2d1b87;
+    color:white;
+
+    padding:14px;
+    border-radius:14px;
+
+    font-weight:bold;
+    transition:0.2s;
+}
+
+.logout-area a:hover{
+    background:#4331a3;
+}
