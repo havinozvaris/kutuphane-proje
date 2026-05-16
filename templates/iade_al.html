@@ -42,7 +42,7 @@
                         <h3 style="margin-bottom: 8px; color: var(--text);">{{ loan.title }}</h3>
                         <div style="font-size: 13px; color: var(--text-soft); display: grid; gap: 4px;">
                             <span>👤 <strong>Üye:</strong> {{ loan.member_name }}</span>
-                            <span>📅 <strong>Ödünç Tarihi:</strong> {{ loan.loan_date }}</span>
+                           <span>📅 <strong>Ödünç Tarihi:</strong> {{ loan.loan_date | tarih }}</span>
                             <span>🔖 <strong>ISBN:</strong> {{ loan.isbn }}</span>
                         
                             <span style="margin-top: 5px; color: #e67e22; font-weight: 700;">

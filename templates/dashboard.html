@@ -70,7 +70,7 @@
         <td style="color:var(--text-soft);font-size:12px;">{{ loan.id }}</td>
         <td><strong>{{ loan.title }}</strong></td>
         <td>{{ loan.name }}</td>
-        <td style="color:var(--text-soft);font-size:12px;">{{ loan.loan_date[:10] }}</td>
+        <td style="color:var(--text-soft);font-size:12px;">{{ loan.loan_date[8:10] }}-{{ loan.loan_date[5:7] }}-{{ loan.loan_date[:4] }}</td>
       </tr>
       {% endfor %}
       </tbody>

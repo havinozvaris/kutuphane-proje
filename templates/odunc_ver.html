@@ -82,12 +82,15 @@
         <div class="section-header">
             <div class="section-title">📊 İşlem Özeti</div>
         </div>
-        
-        <div style="background: var(--bg); padding: 25px; border-radius: 15px; border: 1px dashed var(--border); margin-bottom: 25px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <span style="color: var(--text-soft); font-weight: 500;">Bugünün Tarihi:</span>
-                <strong style="color: var(--accent); font-family: 'Syne';">06.05.2026</strong>
-            </div>
+       <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+    <span style="color: var(--text-soft); font-weight: 500;">
+        Bugünün Tarihi:
+    </span>
+
+    <strong style="color: var(--accent); font-family: 'Syne';">
+        {{ today }}
+    </strong>
+</div>
             <div style="display: flex; justify-content: space-between;">
                 <span style="color: var(--text-soft); font-weight: 500;">Durum:</span>
                 <span class="badge-pill green"><span class="dot"></span> Sistem Hazır</span>

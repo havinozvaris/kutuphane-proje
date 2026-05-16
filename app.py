@@ -3,9 +3,17 @@ import sqlite3
 import os
 import hashlib
 import re
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "libraryos_secret_key"
+
+@app.template_filter('tarih')
+def tarih_formatla(tarih):
+    if tarih:
+        dt = datetime.strptime(tarih[:19], "%Y-%m-%d %H:%M:%S")
+        return dt.strftime("%d.%m.%Y")
+    return ""
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "library.db")
 
