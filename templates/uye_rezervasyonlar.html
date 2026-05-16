@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>LibraryOS • Üye Paneli</title>
+<title>LibraryOS • Rezervasyonlarım</title>
 
 <style>
 
@@ -202,6 +201,7 @@ table td{
 }
 
 </style>
+
 </head>
 <body>
 
@@ -213,7 +213,7 @@ table td{
 
         <div class="menu">
 
-            <a href="{{ url_for('uye_dashboard') }}" class="active">
+            <a href="{{ url_for('uye_dashboard') }}">
                 🏠 <span>Ana Sayfa</span>
             </a>
 
@@ -221,15 +221,13 @@ table td{
                 📚 <span>Kitaplar</span>
             </a>
 
-            <a href="{{ url_for('uye_rezervasyonlar') }}">
-        📌 <span>Rezervasyonlarım</span>
-    </a>
+            <a href="{{ url_for('uye_rezervasyonlar') }}" class="active">
+                📌 <span>Rezervasyonlarım</span>
+            </a>
 
-         <a href="{{ url_for('uye_profil') }}">
-    👤 <span>Profil</span>
-</a>
-
-           
+            <a href="{{ url_for('uye_profil') }}">
+                👤 <span>Profil</span>
+            </a>
 
             <a href="{{ url_for('logout') }}">
                 🚪 <span>Çıkış</span>
@@ -249,8 +247,8 @@ table td{
 
     <div class="top">
         <div>
-            <h1>Hoş Geldin 👋</h1>
-            <p>Kütüphane hesabına genel bakış</p>
+            <h1>Rezervasyonlarım 📌</h1>
+            <p>Rezerve ettiğiniz kitaplar</p>
         </div>
 
         <div class="status">
@@ -261,23 +259,8 @@ table td{
     <div class="cards">
 
         <div class="card">
-            <h2>{{ stats.total }}</h2>
-            <p>Aldığım Kitap</p>
-        </div>
-
-        <div class="card">
-            <h2>{{ stats.active }}</h2>
-            <p>Aktif Ödünç</p>
-        </div>
-
-        <div class="card">
-            <h2>{{ stats.reserved }}</h2>
-            <p>Rezervasyon</p>
-        </div>
-
-        <div class="card">
-            <h2>0</h2>
-            <p>Geciken Kitap</p>
+            <h2>{{ reserved_books|length }}</h2>
+            <p>Toplam Rezervasyon</p>
         </div>
 
     </div>
@@ -285,11 +268,7 @@ table td{
     <div class="table-card">
 
         <div class="table-header">
-            <h2>Kitaplarım</h2>
-
-            <a href="{{ url_for('uye_dashboard') }}" class="btn">
-                Tümünü Gör
-            </a>
+            <h2>Rezervasyon Listesi</h2>
         </div>
 
         <table>
@@ -298,25 +277,23 @@ table td{
                 <tr>
                     <th>#</th>
                     <th>Kitap</th>
-                    <th>Alış Tarihi</th>
+                    <th>Tarih</th>
                     <th>Durum</th>
                 </tr>
             </thead>
 
             <tbody>
 
-                {% for book in user_books %}
-
+            {% for book in reserved_books %}
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td>{{ book.title }}</td>
-                    <td>{{ book.loan_date }}</td>
+                    <td>{{ book.reserve_date }}</td>
                     <td>
                         <span class="badge">{{ book.status }}</span>
                     </td>
                 </tr>
-
-                {% endfor %}
+            {% endfor %}
 
             </tbody>
 

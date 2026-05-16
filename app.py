@@ -16,6 +16,7 @@ def get_db():
     return conn
 
 
+
 def sifre_hashle(sifre):
     return hashlib.sha256(sifre.encode()).hexdigest()
 
@@ -85,7 +86,17 @@ def init_db():
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
-
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS reservations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            book_id INTEGER NOT NULL,
+            reserve_date TEXT DEFAULT CURRENT_TIMESTAMP,
+            status TEXT DEFAULT 'Bekliyor',
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(book_id) REFERENCES books(id)
+        )
+    """)
     c.execute("SELECT COUNT(*) FROM books")
     if c.fetchone()[0] == 0:
         books = [
@@ -317,7 +328,6 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
-
 # --- ÜYE PANELİ ---
 @app.route("/uye")
 def uye_dashboard():
@@ -325,32 +335,53 @@ def uye_dashboard():
         return redirect(url_for("login"))
     
     conn = get_db()
-    # Giriş yapan üyenin bilgilerini members tablosundan e-posta ile eşleştiriyoruz
-    member = conn.execute("SELECT id FROM members WHERE email=?", (session.get("email"),)).fetchone()
-    
+
+    # giriş yapan üye
+    member = conn.execute(
+        "SELECT id FROM members WHERE email=?",
+        (session.get("email"),)
+    ).fetchone()
+
     stats = {"total": 0, "active": 0, "reserved": 0}
     user_books = []
 
-
     if member:
         m_id = member["id"]
-        # İstatistikleri çekelim
-        stats["total"] = conn.execute("SELECT COUNT(*) FROM loans WHERE member_id=?", (m_id,)).fetchone()[0]
-        stats["active"] = conn.execute("SELECT COUNT(*) FROM loans WHERE member_id=? AND status='Aktif'", (m_id,)).fetchone()[0]
-        stats["reserved"] = conn.execute("SELECT COUNT(*) FROM books WHERE borrower_id=? AND status='Rezerve'", (m_id,)).fetchone()[0]
-        
-        # Tablo için üyenin aktif kitaplarını çekelim
+
+        # toplam ödünç
+        stats["total"] = conn.execute(
+            "SELECT COUNT(*) FROM loans WHERE member_id=?",
+            (m_id,)
+        ).fetchone()[0]
+
+        # aktif ödünç
+        stats["active"] = conn.execute(
+            "SELECT COUNT(*) FROM loans WHERE member_id=? AND status='Aktif'",
+            (m_id,)
+        ).fetchone()[0]
+
+        # rezervasyon (users.id kullanılıyor)
+        stats["reserved"] = conn.execute("""
+            SELECT COUNT(*)
+            FROM reservations
+            WHERE user_id=? AND status='Bekliyor'
+        """, (session["user_id"],)).fetchone()[0]
+
+        # aktif kitaplar
         user_books = conn.execute("""
             SELECT b.title, l.loan_date, l.status 
             FROM loans l 
             JOIN books b ON l.book_id = b.id 
             WHERE l.member_id=? AND l.status='Aktif'
         """, (m_id,)).fetchall()
-        
+
     conn.close()
-    return render_template("member_home.html", stats=stats, user_books=user_books)
 
-
+    return render_template(
+        "member_home.html",
+        stats=stats,
+        user_books=user_books
+    )
 
 @app.route("/dashboard")
 def dashboard():
@@ -951,7 +982,110 @@ def iade_et(loan_id):
 
 
 
+@app.route("/uye/rezervasyonlar")
+def uye_rezervasyonlar():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+
+    reserved_books = conn.execute("""
+        SELECT r.id,
+               b.title,
+               r.reserve_date,
+               r.status
+        FROM reservations r
+        JOIN books b ON r.book_id = b.id
+        WHERE r.user_id = ?
+        ORDER BY r.id DESC
+    """, (session["user_id"],)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "uye_rezervasyonlar.html",
+        reserved_books=reserved_books
+    )
+
+
+@app.route("/rezervasyon/<int:book_id>", methods=["POST"])
+def rezervasyon_yap(book_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+
+    # kitap kontrol
+    book = conn.execute(
+        "SELECT status FROM books WHERE id=?",
+        (book_id,)
+    ).fetchone()
+
+    if not book or book["status"] != "Mevcut":
+        conn.close()
+        return "Bu kitap şu an rezerve edilemez"
+
+    # aynı rezervasyon var mı?
+    existing = conn.execute("""
+        SELECT id FROM reservations
+        WHERE user_id=? AND book_id=? AND status='Bekliyor'
+    """, (session["user_id"], book_id)).fetchone()
+
+    if existing:
+        conn.close()
+        return redirect(url_for("uye_kitaplar"))
+
+    conn.execute("""
+        INSERT INTO reservations (user_id, book_id)
+        VALUES (?, ?)
+    """, (session["user_id"], book_id))
+
+    conn.execute("""
+        UPDATE books
+        SET status='Rezerve'
+        WHERE id=?
+    """, (book_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("uye_kitaplar"))
+
+
+@app.route("/rezervasyon_iptal/<int:id>")
+def rezervasyon_iptal(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+
+    r = conn.execute("""
+        SELECT book_id FROM reservations
+        WHERE id=? AND user_id=?
+    """, (id, session["user_id"])).fetchone()
+
+    if r:
+        conn.execute("""
+            DELETE FROM reservations WHERE id=?
+        """, (id,))
+
+        conn.execute("""
+            UPDATE books
+            SET status='Mevcut'
+            WHERE id=?
+        """, (r["book_id"],))
+
+        conn.commit()
+
+    conn.close()
+
+    return redirect(url_for("uye_rezervasyonlar"))
+
+
 
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000)  

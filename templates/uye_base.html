@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}LibraryOS Üye{% endblock %}</title>
+
+<style>
+
+:root{
+    --bg:#f4f5ff;
+    --sidebar:#17095e;
+    --text:#1b1464;
+    --card:#fff;
+    --border:#e5e7eb;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: Arial;
+}
+
+body{
+    background:var(--bg);
+    display:flex;
+    color:var(--text);
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:280px;
+    height:100vh;
+    background:var(--sidebar);
+    color:white;
+    position:fixed;
+    left:0;
+    top:0;
+    padding:25px 18px;
+    display:flex;
+    flex-direction:column;
+}
+
+.logo{
+    font-size:32px;
+    font-weight:800;
+    margin-bottom:30px;
+}
+
+.menu{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.menu a{
+    color:white;
+    text-decoration:none;
+    padding:12px;
+    border-radius:10px;
+    font-size:15px;
+}
+
+.menu a:hover,
+.menu a.active{
+    background:rgba(255,255,255,0.15);
+}
+
+.bottom-user{
+    margin-top:auto;
+    font-size:14px;
+    opacity:0.9;
+}
+
+/* MAIN */
+.main{
+    margin-left:260px;
+    width:calc(100% - 260px);
+    padding:25px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <div>
+        <div class="logo">📚 LibraryOS</div>
+
+        <div class="menu">
+            <a href="{{ url_for('uye_dashboard') }}"
+               class="{% if request.endpoint=='uye_dashboard' %}active{% endif %}">
+               🏠 Ana Sayfa
+            </a>
+
+            <a href="{{ url_for('uye_kitaplar') }}"
+               class="{% if request.endpoint=='uye_kitaplar' %}active{% endif %}">
+               📚 Kitaplar
+            </a>
+
+            <a href="{{ url_for('uye_rezervasyonlar') }}"
+               class="{% if request.endpoint=='uye_rezervasyonlar' %}active{% endif %}">
+               📌 Rezervasyonlarım
+            </a>
+
+            <a href="{{ url_for('uye_profil') }}">👤 Profil</a>
+            <a href="{{ url_for('logout') }}">🚪 Çıkış</a>
+        </div>
+    </div>
+
+    <div class="bottom-user">
+        👤 {{ session['name'] }}
+    </div>
+
+</div>
+
+<div class="main">
+    {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

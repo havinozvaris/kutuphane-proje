@@ -115,6 +115,9 @@ td{
         <div class="menu">
             <a href="{{ url_for('uye_dashboard') }}">🏠 Ana Sayfa</a>
             <a href="{{ url_for('uye_kitaplar') }}" class="active">📚 Kitaplar</a>
+            <a href="{{ url_for('uye_rezervasyonlar') }}" class="active">
+                📌 <span>Rezervasyonlarım</span>
+            </a>
             <a href="{{ url_for('uye_profil') }}">👤 Profil</a>
             <a href="{{ url_for('logout') }}">🚪 Çıkış</a>
         </div>
@@ -134,7 +137,7 @@ td{
     <th>Kitap</th>
     <th>Yazar</th>
     <th>Kategori</th>
-    <th>Yıl</th>
+    <th>İlk Basım Tarihi</th>
     <th>ISBN</th>
     <th>Durum</th>
 </tr>
@@ -155,37 +158,40 @@ td{
     <td>
 {% if book.status == 'Mevcut' %}
 
-    <span class="status mevcut">Mevcut</span>
+<span class="status mevcut">Mevcut</span>
 
-    <form method="POST"
-          action="{{ url_for('odunc_al', book_id=book.id) }}"
-          onsubmit="return confirmOdunc(event, this);"
-          style="display:inline;">
+<form method="POST"
+      action="{{ url_for('rezervasyon_yap', book_id=book.id) }}"
+      style="display:inline;">
+    <button type="submit">📌 Rezerve Et</button>
+</form>
 
-        <button type="submit">📥 Ödünç Al</button>
-    </form>
+<form method="POST"
+      action="{{ url_for('odunc_al', book_id=book.id) }}"
+      onsubmit="return confirmOdunc(event, this);"
+      style="display:inline;">
+    <button type="submit">📥 Ödünç Al</button>
+</form>
 
 {% elif book.status == 'Ödünçte' and book.loan_id %}
 
     <span class="status oduncte">Ödünçte</span>
 
     {% if member_id %}
-
         <form method="POST"
               action="{{ url_for('iade_et', loan_id=book.loan_id) }}"
               onsubmit="return confirmIade(event, this);"
               style="display:inline;">
-
             <button type="submit">↩ İade Et</button>
         </form>
-
     {% endif %}
 
-{% else %}
+{% elif book.status == 'Rezerve' %}
 
     <span class="status rezerve">Rezerve</span>
 
 {% endif %}
+
 
     </td>
 
