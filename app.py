@@ -710,6 +710,7 @@ def add_loan():
     return redirect(url_for("loans"))
 
 
+# --- YENİLENEN İADE ALMA FONKSİYONU (HASAR VE SUCCESS BİLDİRİMİ ENTEGRELİ) ---
 @app.route("/loans/return/<int:id>", methods=["POST"])
 def return_loan(id):
     kontrol = admin_required()
@@ -717,16 +718,29 @@ def return_loan(id):
         return kontrol
 
     conn = get_db()
+    
+    # HTML formundan gelen hasar bedelini yakalıyoruz
+    hasar_bedeli = float(request.form.get("hasar_bedeli", 0))
 
+    # İade edilecek ödünç kaydını bulalım
     loan = conn.execute("SELECT * FROM loans WHERE id=?", (id,)).fetchone()
 
     if loan:
+        alinan_depozito = float(loan["deposit"] or 0)
+        
+        # Üyeye geri ödenecek net tutarı hesapla (Negatif olmasın kontrolü)
+        geri_odenecek = alinan_depozito - hasar_bedeli
+        if geri_odenecek < 0:
+            geri_odenecek = 0
+
+        # Ödünç kaydını 'İade' durumuna çek
         conn.execute("""
             UPDATE loans
             SET status='İade', return_date=CURRENT_TIMESTAMP
             WHERE id=?
         """, (id,))
 
+        # Kitabı tekrar 'Mevcut' durumuna getir
         conn.execute("""
             UPDATE books
             SET status='Mevcut', borrower_id=NULL
@@ -734,9 +748,18 @@ def return_loan(id):
         """, (loan["book_id"],))
 
         conn.commit()
+        conn.close()
+
+        # Hoca kriterine uygun dinamik başarı bildirimi mesajı
+        if hasar_bedeli > 0:
+            msg = f"İade işlemi tamamlandı! {int(hasar_bedeli)} TL hasar kesintisi yapıldı. Üyeye geri iade edilen tutar: {int(geri_odenecek)} TL"
+        else:
+            msg = f"İade işlemi başarıyla tamamlandı! Kitap hasarsız teslim alındı, {int(alinan_depozito)} TL depozito eksiksiz iade edildi."
+
+        # Mesajı url parametresi olarak iade_al sayfasına gönderiyoruz
+        return redirect(url_for("iade_al", success=msg))
 
     conn.close()
-
     return redirect(url_for("iade_al"))
 
 
@@ -1125,10 +1148,6 @@ def rezervasyon_iptal(id):
     return redirect(url_for("uye_rezervasyonlar"))
 
 
-
-
-
-
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True, port=5000)  
+    app.run(debug=True, port=5000)

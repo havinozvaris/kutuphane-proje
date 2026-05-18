@@ -4,6 +4,20 @@
 {% block topbar_title %}İade Alma İşlemleri{% endblock %}
 
 {% block content %}
+{% if request.args.get('success') %}
+<div class="alert alert-success" style="margin-bottom: 25px; padding: 18px 24px; background-color: #ecfdf5; color: #10b981; border-radius: 14px; font-weight: 700; border: 1.5px solid #a7f3d0; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(16,185,129,0.06); animation: slideDown 0.3s ease;">
+    <span style="font-size: 20px;">🎉</span>
+    <div>{{ request.args.get('success') }}</div>
+</div>
+
+<style>
+    @keyframes slideDown {
+        from { transform: translateY(-10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+</style>
+{% endif %}
+
 <section class="stats-grid">
     <div class="stat-card">
         <div class="stat-icon orange">📦</div>
@@ -19,8 +33,10 @@
 </section>
 
 <div class="card" style="margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, #f8faff, #ffffff);">
-    <h3 style="margin-bottom: 8px;">İade İşlemleri</h3>
-    <p style="color: var(--text-soft); font-size: 14px;">Ödünç verilmiş kitaplar aşağıda listelenmiştir. İade edilen kitap sistemde otomatik olarak "Mevcut" hale gelir.</p>
+    <h3 style="margin-bottom: 8px;">Zarar/Hasar Odaklı İade Paneli</h3>
+    <p style="color: var(--text-soft); font-size: 14px;">
+        Hoca kriterlerine uygun olarak revize edilmiştir. Kitap iade alınırken varsa hasar durumunu giriniz. Sistem, üyeye iade edilecek depozito tutarını anlık olarak hesaplayacaktır.
+    </p>
 </div>
 
 <div class="card">
@@ -37,28 +53,79 @@
             </div>
         {% else %}
             {% for loan in loaned_books %}
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #f8f9ff; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--border);">
-                    <div>
-                        <h3 style="margin-bottom: 8px; color: var(--text);">{{ loan.title }}</h3>
+                <div class="loan-row" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #f8f9ff; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--border); gap: 20px;">
+                    
+                    <div style="flex: 1;">
+                        <h3 style="margin-bottom: 8px; color: var(--text); font-size: 16px;">{{ loan.title }}</h3>
                         <div style="font-size: 13px; color: var(--text-soft); display: grid; gap: 4px;">
                             <span>👤 <strong>Üye:</strong> {{ loan.member_name }}</span>
-                           <span>📅 <strong>Ödünç Tarihi:</strong> {{ loan.loan_date | tarih }}</span>
+                            <span>📅 <strong>Ödünç Tarihi:</strong> {{ loan.loan_date | tarih }}</span>
                             <span>🔖 <strong>ISBN:</strong> {{ loan.isbn }}</span>
-                        
-                            <span style="margin-top: 5px; color: #e67e22; font-weight: 700;">
-                                💵 İade Edilecek Depozito: {{ loan.deposit }} TL
-                            </span>
+                            
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e0e7ff; display: flex; flex-direction: column; gap: 2px;">
+                                <span style="color: #e67e22; font-weight: 600; font-size: 12px;">
+                                    💵 Alınan Toplam Depozito: {{ loan.deposit }} TL
+                                </span>
+                                <span style="color: #10b981; font-weight: 800; font-size: 14px;">
+                                    💰 Geri Ödenecek Tutar: <span class="kalan-tutar">{{ loan.deposit }}</span> TL 
+                                    <span class="kesinti-text" style="color: #dc2626; font-size: 12px; font-weight: 600; display: none; margin-left: 5px;"></span>
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <form action="/loans/return/{{ loan.loan_id }}" method="POST">
-                        <button type="submit" class="btn-primary" style="padding: 10px 24px; font-size: 14px; width: auto;">
-                            ↩️ İade Et
+                    <form action="/loans/return/{{ loan.loan_id }}" method="POST" style="display: flex; align-items: center; gap: 15px; margin: 0;">
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 700; color: #dc2626; margin: 0;">Zarar Bedeli (TL):</label>
+                            <input type="number" 
+                                   name="hasar_bedeli" 
+                                   class="hasar-input" 
+                                   min="0" 
+                                   max="{{ loan.deposit }}" 
+                                   value="0" 
+                                   data-deposit="{{ loan.deposit }}" 
+                                   oninput="canliHesapla(this)" 
+                                   style="width: 100px; padding: 8px 12px; border-radius: 10px; border: 1.5px solid var(--border); background: #fff; margin-top: 0 !important; outline: none; font-size: 13px; font-weight: 600; text-align: center;">
+                        </div>
+
+                        <button type="submit" class="btn" style="padding: 12px 24px; font-size: 14px; width: auto; margin-top: 18px !important; white-space: nowrap; font-weight: 700;">
+                            ↩️ İade Al
                         </button>
                     </form>
+
                 </div>
             {% endfor %}
         {% endif %}
     </div>
 </div>
+
+<script>
+function canliHesapla(input) {
+    const deposit = parseFloat(input.getAttribute('data-deposit')) || 0;
+    let damage = parseFloat(input.value);
+
+    if (isNaN(damage) || damage < 0) {
+        damage = 0;
+    }
+
+    if (damage > deposit) {
+        damage = deposit;
+        input.value = damage;
+    }
+
+    const refund = deposit - damage;
+    const row = input.closest('.loan-row');
+    if (row) {
+        row.querySelector('.kalan-tutar').innerText = refund;
+        
+        const kesintiSpan = row.querySelector('.kesinti-text');
+        if (damage > 0) {
+            kesintiSpan.innerText = `(${damage} TL hasar kesintisi yapıldı)`;
+            kesintiSpan.style.display = 'inline';
+        } else {
+            kesintiSpan.style.display = 'none';
+        }
+    }
+}
+</script>
 {% endblock %}
