@@ -99,7 +99,7 @@ body {
     color: #ddd;
 }
 
-/* ── ANA İÇERİK ALANI ── */
+/*  ANA İÇERİK ALANI  */
 .main-content {
     flex: 1;
     padding: 30px;
@@ -139,7 +139,7 @@ body {
     box-shadow: 0 0 5px var(--success-green);
 }
 
-/* ── KARTLAR VE TASARIM ── */
+/* KARTLAR VE TASARIM  */
 .welcome-box {
     background: var(--white);
     padding: 25px;
@@ -184,13 +184,12 @@ body {
     color: var(--white);
 }
 
-/* Renk Sınıfları */
 .purple { background: linear-gradient(135deg, #7b2ff7, #9d5cf9); }
 .green  { background: linear-gradient(135deg, #17c964, #38e483); }
 .orange { background: linear-gradient(135deg, #ff9f1c, #ffbf69); }
 .blue   { background: linear-gradient(135deg, #3a86ff, #70a1ff); }
 
-/* ── BUTONLAR VE DİĞERLERİ ── */
+/*  BUTONLAR VE DİĞERLERİ  */
 .btn {
     text-decoration: none;
     background: var(--primary);

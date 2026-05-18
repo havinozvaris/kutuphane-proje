@@ -40,15 +40,16 @@
 {% endif %}
 
 <div class="grid-2">
-    <div class="card" style="padding: 30px; min-height: 400px; display: flex; flex-direction: column; justify-content: center;">
-        <div class="section-header">
-            <div class="section-title">📩 Ödünç Verme Formu</div>
+    
+    <div class="card" style="padding: 30px; min-height: 420px; display: flex; flex-direction: column; justify-content: center;">
+        <div style="font-weight: 800; font-size: 16px; color: var(--sidebar); margin-bottom: 20px;">
+            📩 Ödünç Verme Formu
         </div>
         
         <form action="{{ url_for('add_loan') }}" method="POST">
             <div class="form-group">
-                <label>Kitap Seç *</label>
-                <select name="book_id" required>
+                <label style="font-size: 13px; font-weight: 600;">Kitap Seç *</label>
+                <select name="book_id" required style="width: 100%; margin-top: 6px;">
                     <option value="">-- Mevcut kitap seçin --</option>
                     {% for kitap in available_books %}
                         <option value="{{ kitap.id }}">{{ kitap.title }}</option>
@@ -57,8 +58,8 @@
             </div>
             
             <div class="form-group" style="margin-top: 20px;">
-                <label>Üye Seç *</label>
-                <select name="member_id" required>
+                <label style="font-size: 13px; font-weight: 600;">Üye Seç *</label>
+                <select name="member_id" required style="width: 100%; margin-top: 6px;">
                     <option value="">-- Üye seçin --</option>
                     {% for uye in all_members %}
                         <option value="{{ uye.id }}">{{ uye.name }}</option>
@@ -67,52 +68,54 @@
             </div>
 
             <div class="form-group" style="margin-top: 20px;">
-                <label>💰 Alınan Depozito (TL) *</label>
+                <label style="font-size: 13px; font-weight: 600;">💰 Alınan Depozito (TL) *</label>
                 <input type="number" name="deposit" placeholder="Örn: 100" min="0" required 
-                       style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text);">
+                       style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text); margin-top: 6px;">
             </div>
             
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 30px; justify-content: center; padding: 18px; font-size: 16px;">
+            <button type="submit" class="btn" style="width: 100%; margin-top: 30px; justify-content: center; padding: 16px; font-size: 16px;">
                 📖 Kitabı Ödünç Ver
             </button>
         </form>
     </div>
 
-    <div class="card" style="padding: 30px; min-height: 400px;">
-        <div class="section-header">
-            <div class="section-title">📊 İşlem Özeti</div>
-        </div>
-       <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-    <span style="color: var(--text-soft); font-weight: 500;">
-        Bugünün Tarihi:
-    </span>
-
-    <strong style="color: var(--accent); font-family: 'Syne';">
-        {{ today }}
-    </strong>
-</div>
-            <div style="display: flex; justify-content: space-between;">
+    <div class="card" style="padding: 30px; min-height: 420px; display: flex; flex-direction: column; justify-content: space-between;">
+        
+        <div>
+            <div style="font-weight: 800; font-size: 16px; color: var(--sidebar); margin-bottom: 20px;">
+                📊 İşlem Özeti
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px;">
+                <span style="color: var(--text-soft); font-weight: 500;">Bugünün Tarihi:</span>
+                <strong style="color: var(--accent); font-family: 'Syne', sans-serif;">{{ today }}</strong>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 25px;">
                 <span style="color: var(--text-soft); font-weight: 500;">Durum:</span>
-                <span class="badge-pill green"><span class="dot"></span> Sistem Hazır</span>
+                <span style="color: #10b981; background: #ecfdf5; padding: 4px 12px; border-radius: 50px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                    <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span> Sistem Hazır
+                </span>
             </div>
         </div>
 
-        <div style="padding: 15px; border-left: 4px solid var(--accent); background: #f8faff; border-radius: 0 10px 10px 0;">
-            <p style="font-size: 14px; color: var(--text-soft); line-height: 1.8;">
+        <div style="padding: 20px; border-left: 4px solid var(--accent); background: #f8faff; border-radius: 0 14px 14px 0;">
+            <p style="font-size: 14px; color: var(--text-soft); line-height: 1.8; margin-bottom: 10px;">
                 Bu panel üzerinden kütüphanenizdeki kitapların teslimatını gerçekleştirebilirsiniz.
             </p>
-            <ul style="margin-top: 10px; font-size: 13px; color: var(--text-soft); padding-left: 20px;">
+            <ul style="font-size: 13px; color: var(--text-soft); padding-left: 20px; line-height: 2;">
                 <li>Kitap durumu <b>"Ödünçte"</b> olarak güncellenir.</li>
                 <li>Üye ödünç limiti (Maks. 3) kontrol edilir.</li>
                 <li><b>Depozito bedeli</b> kayıt altına alınır.</li>
             </ul>
         </div>
+        
     </div>
 </div>
 
 <div class="card" style="margin-top: 25px; padding: 20px; display: flex; align-items: center; gap: 15px; background: linear-gradient(to right, #ffffff, #f0f4ff);">
     <span style="font-size: 24px;">💡</span>
-    <p style="font-size: 13px; color: var(--text-soft);">
+    <p style="font-size: 13px; color: var(--text-soft); margin: 0;">
         <b>İpucu:</b> Aradığınız kitap listede yoksa, başka bir üye üzerindedir veya rezerve edilmiştir. "Kitaplar" sayfasından kontrol edebilirsiniz.
     </p>
 </div>
