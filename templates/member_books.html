@@ -99,15 +99,27 @@ td{
 .mevcut{background:#d7ffe4;color:#00a651;}
 .oduncte{background:#fff4d7;color:#a67c00;}
 .rezerve{background:#ffd7d7;color:#a60000;}
+
+/* Butonlara hafif modern dokunuş (İstersen silebilirsin) */
+button {
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-weight: 600;
+    transition: 0.2s;
+}
+button:hover {
+    background: #f0f0f0;
+}
 </style>
 
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
-
     <div>
         <div class="logo">📚 LibraryOS</div>
         <div class="logo-text">Üye Paneli</div>
@@ -115,17 +127,13 @@ td{
         <div class="menu">
             <a href="{{ url_for('uye_dashboard') }}">🏠 Ana Sayfa</a>
             <a href="{{ url_for('uye_kitaplar') }}" class="active">📚 Kitaplar</a>
-            <a href="{{ url_for('uye_rezervasyonlar') }}" class="active">
-                📌 <span>Rezervasyonlarım</span>
-            </a>
+            <a href="{{ url_for('uye_rezervasyonlar') }}">📌 <span>Rezervasyonlarım</span></a>
             <a href="{{ url_for('uye_profil') }}">👤 Profil</a>
             <a href="{{ url_for('logout') }}">🚪 Çıkış</a>
         </div>
     </div>
-
 </div>
 
-<!-- MAIN -->
 <div class="container">
 
 <h1>📚 Tüm Kitaplar</h1>
@@ -144,10 +152,8 @@ td{
 </thead>
 
 <tbody>
-
 {% for book in books %}
 <tr>
-
     <td>{{ book.id }}</td>
     <td><b>{{ book.title }}</b></td>
     <td>{{ book.author }}</td>
@@ -156,72 +162,32 @@ td{
     <td>{{ book.isbn }}</td>
 
     <td>
-{% if book.status == 'Mevcut' %}
-
-<span class="status mevcut">Mevcut</span>
-
-<form method="POST"
-      action="{{ url_for('rezervasyon_yap', book_id=book.id) }}"
-      style="display:inline;">
-    <button type="submit">📌 Rezerve Et</button>
-</form>
-
-<form method="POST"
-      action="{{ url_for('odunc_al', book_id=book.id) }}"
-      onsubmit="return confirmOdunc(event, this);"
-      style="display:inline;">
-    <button type="submit">📥 Ödünç Al</button>
-</form>
-
-{% elif book.status == 'Ödünçte' and book.loan_id %}
-
-    <span class="status oduncte">Ödünçte</span>
-
-    {% if member_id %}
-        <form method="POST"
-              action="{{ url_for('iade_et', loan_id=book.loan_id) }}"
-              onsubmit="return confirmIade(event, this);"
-              style="display:inline;">
-            <button type="submit">↩ İade Et</button>
+    {% if book.status == 'Mevcut' %}
+        <span class="status mevcut">Mevcut</span>
+        <form method="POST" action="{{ url_for('rezervasyon_yap', book_id=book.id) }}" style="display:inline;">
+            <button type="submit">📌 Rezerve Et</button>
         </form>
+
+    {% elif book.status == 'Ödünçte' %}
+        <span class="status oduncte">Ödünçte</span>
+        {% if member_id and book.loan_id %}
+            <form method="POST" action="{{ url_for('iade_et', loan_id=book.loan_id) }}" onsubmit="return confirmIade(event, this);" style="display:inline;">
+                <button type="submit">↩ İade Et</button>
+            </form>
+        {% endif %}
+
+    {% elif book.status == 'Rezerve' %}
+        <span class="status rezerve">Rezerve</span>
     {% endif %}
-
-{% elif book.status == 'Rezerve' %}
-
-    <span class="status rezerve">Rezerve</span>
-
-{% endif %}
-
-
     </td>
-
 </tr>
 {% endfor %}
-
 </tbody>
 </table>
 
 </div>
 
-<!-- SWEETALERT JS -->
 <script>
-
-function confirmOdunc(e, form){
-    e.preventDefault();
-
-    Swal.fire({
-        title: "Ödünç almak istiyor musun?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Evet",
-        cancelButtonText: "Hayır"
-    }).then((result) => {
-        if(result.isConfirmed){
-            form.submit();
-        }
-    });
-}
-
 function confirmIade(e, form){
     e.preventDefault();
 
@@ -237,7 +203,6 @@ function confirmIade(e, form){
         }
     });
 }
-
 </script>
 
 </body>
