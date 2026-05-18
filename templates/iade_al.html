@@ -9,14 +9,18 @@
     <span style="font-size: 20px;">🎉</span>
     <div>{{ request.args.get('success') }}</div>
 </div>
-
-<style>
-    @keyframes slideDown {
-        from { transform: translateY(-10px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-</style>
 {% endif %}
+
+<div id="customConfirmModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 999999; backdrop-filter: blur(4px);">
+    <div style="background: white; padding: 35px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); width: 90%; max-width: 400px; text-align: center; animation: popupOpen 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+        <div style="width: 70px; height: 70px; border: 3px solid #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: #f59e0b; font-size: 40px; font-weight: 300; font-family: system-ui;">!</div>
+        <h3 style="color: #1a1d23; font-size: 18px; font-weight: 700; margin-bottom: 25px; line-height: 1.5; padding: 0 10px;">Kitabı iade etmek istiyor musun?</h3>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="proceedSubmit()" style="background: #6366f1; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; flex: 1; transition: 0.2s;">Evet iade et</button>
+            <button onclick="closeConfirmModal()" style="background: #94a3b8; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; flex: 1; transition: 0.2s;">Vazgeç</button>
+        </div>
+    </div>
+</div>
 
 <section class="stats-grid">
     <div class="stat-card">
@@ -34,9 +38,7 @@
 
 <div class="card" style="margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, #f8faff, #ffffff);">
     <h3 style="margin-bottom: 8px;">Zarar/Hasar Odaklı İade Paneli</h3>
-    <p style="color: var(--text-soft); font-size: 14px;">
-        Hoca kriterlerine uygun olarak revize edilmiştir. Kitap iade alınırken varsa hasar durumunu giriniz. Sistem, üyeye iade edilecek depozito tutarını anlık olarak hesaplayacaktır.
-    </p>
+    <p style="color: var(--text-soft); font-size: 14px;">Hoca kriterlerine uygun olarak revize edilmiştir. Kitap iade alınırken varsa hasar durumunu giriniz. Sistem, üyeye iade edilecek depozito tutarını anlık olarak hesaplayacaktır.</p>
 </div>
 
 <div class="card">
@@ -63,9 +65,7 @@
                             <span>🔖 <strong>ISBN:</strong> {{ loan.isbn }}</span>
                             
                             <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e0e7ff; display: flex; flex-direction: column; gap: 2px;">
-                                <span style="color: #e67e22; font-weight: 600; font-size: 12px;">
-                                    💵 Alınan Toplam Depozito: {{ loan.deposit }} TL
-                                </span>
+                                <span style="color: #e67e22; font-weight: 600; font-size: 12px;">💵 Alınan Toplam Depozito: {{ loan.deposit }} TL</span>
                                 <span style="color: #10b981; font-weight: 800; font-size: 14px;">
                                     💰 Geri Ödenecek Tutar: <span class="kalan-tutar">{{ loan.deposit }}</span> TL 
                                     <span class="kesinti-text" style="color: #dc2626; font-size: 12px; font-weight: 600; display: none; margin-left: 5px;"></span>
@@ -74,23 +74,12 @@
                         </div>
                     </div>
 
-                    <form action="/loans/return/{{ loan.loan_id }}" method="POST" style="display: flex; align-items: center; gap: 15px; margin: 0;">
+                    <form action="/loans/return/{{ loan.loan_id }}" method="POST" onsubmit="triggerConfirm(event)" style="display: flex; align-items: center; gap: 15px; margin: 0;">
                         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
                             <label style="font-size: 11px; font-weight: 700; color: #dc2626; margin: 0;">Zarar Bedeli (TL):</label>
-                            <input type="number" 
-                                   name="hasar_bedeli" 
-                                   class="hasar-input" 
-                                   min="0" 
-                                   max="{{ loan.deposit }}" 
-                                   value="0" 
-                                   data-deposit="{{ loan.deposit }}" 
-                                   oninput="canliHesapla(this)" 
-                                   style="width: 100px; padding: 8px 12px; border-radius: 10px; border: 1.5px solid var(--border); background: #fff; margin-top: 0 !important; outline: none; font-size: 13px; font-weight: 600; text-align: center;">
+                            <input type="number" name="hasar_bedeli" class="hasar-input" min="0" max="{{ loan.deposit }}" value="0" data-deposit="{{ loan.deposit }}" oninput="canliHesapla(this)" style="width: 100px; padding: 8px 12px; border-radius: 10px; border: 1.5px solid var(--border); background: #fff; outline: none; font-size: 13px; font-weight: 600; text-align: center;">
                         </div>
-
-                        <button type="submit" class="btn" style="padding: 12px 24px; font-size: 14px; width: auto; margin-top: 18px !important; white-space: nowrap; font-weight: 700;">
-                            ↩️ İade Al
-                        </button>
+                        <button type="submit" class="btn" style="padding: 12px 24px; font-size: 14px; width: auto; margin-top: 18px !important; white-space: nowrap; font-weight: 700;">↩️ İade Al</button>
                     </form>
 
                 </div>
@@ -99,33 +88,42 @@
     </div>
 </div>
 
+<style>
+    @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes popupOpen { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+</style>
+
 <script>
-function canliHesapla(input) {
-    const deposit = parseFloat(input.getAttribute('data-deposit')) || 0;
-    let damage = parseFloat(input.value);
-
-    if (isNaN(damage) || damage < 0) {
-        damage = 0;
-    }
-
-    if (damage > deposit) {
-        damage = deposit;
-        input.value = damage;
-    }
-
-    const refund = deposit - damage;
-    const row = input.closest('.loan-row');
-    if (row) {
-        row.querySelector('.kalan-tutar').innerText = refund;
-        
-        const kesintiSpan = row.querySelector('.kesinti-text');
-        if (damage > 0) {
-            kesintiSpan.innerText = `(${damage} TL hasar kesintisi yapıldı)`;
-            kesintiSpan.style.display = 'inline';
-        } else {
-            kesintiSpan.style.display = 'none';
+    function canliHesapla(input) {
+        const deposit = parseFloat(input.getAttribute('data-deposit')) || 0;
+        let damage = parseFloat(input.value);
+        if (isNaN(damage) || damage < 0) { damage = 0; }
+        if (damage > deposit) { damage = deposit; input.value = damage; }
+        const refund = deposit - damage;
+        const row = input.closest('.loan-row');
+        if (row) {
+            row.querySelector('.kalan-tutar').innerText = refund;
+            const kesintiSpan = row.querySelector('.kesinti-text');
+            if (damage > 0) {
+                kesintiSpan.innerText = `(${damage} TL hasar kesintisi yapıldı)`;
+                kesintiSpan.style.display = 'inline';
+            } else {
+                kesintiSpan.style.display = 'none';
+            }
         }
     }
-}
+
+    let activeForm = null;
+    function triggerConfirm(event) {
+        event.preventDefault(); // Formun gitmesini engelle
+        activeForm = event.target; // Tıklanan satırdaki formu kaydet
+        document.getElementById('customConfirmModal').style.display = 'flex'; // Onay pencerini aç
+    }
+    function proceedSubmit() {
+        if(activeForm) activeForm.submit(); // Evet denirse o spesifik satırı gönder
+    }
+    function closeConfirmModal() {
+        document.getElementById('customConfirmModal').style.display = 'none'; // Kapat
+    }
 </script>
 {% endblock %}
