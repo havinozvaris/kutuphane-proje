@@ -71,14 +71,6 @@ body{
     padding-top:30px;
 }
 
-.bottom-user h3{
-    font-size:18px;
-}
-
-.bottom-user p{
-    opacity:.7;
-}
-
 .main{
     margin-left:280px;
     width:calc(100% - 280px);
@@ -121,12 +113,6 @@ body{
 
 .card h2{
     font-size:38px;
-    margin-bottom:10px;
-}
-
-.card p{
-    font-size:18px;
-    opacity:.8;
 }
 
 .table-card{
@@ -134,26 +120,6 @@ body{
     border-radius:24px;
     padding:28px;
     box-shadow:0 10px 25px rgba(0,0,0,.04);
-}
-
-.table-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:25px;
-}
-
-.table-header h2{
-    font-size:28px;
-}
-
-.btn{
-    background:linear-gradient(90deg,#5b3df5,#9f56ff);
-    color:white;
-    padding:12px 22px;
-    border-radius:12px;
-    text-decoration:none;
-    font-weight:600;
 }
 
 table{
@@ -172,68 +138,31 @@ table td{
     border-bottom:1px solid #eee;
 }
 
-.badge{
-    background:#d7ffe4;
-    color:#00a651;
+.cancel-btn{
+    background:#ff4d6d;
+    color:white;
     padding:8px 14px;
-    border-radius:30px;
-    font-size:14px;
+    border-radius:10px;
+    text-decoration:none;
     font-weight:600;
 }
 
-@media(max-width:900px){
-
-    .sidebar{
-        width:100px;
-    }
-
-    .logo-text,
-    .menu a span,
-    .bottom-user{
-        display:none;
-    }
-
-    .main{
-        margin-left:100px;
-        width:calc(100% - 100px);
-    }
-
-}
-
 </style>
-
 </head>
+
 <body>
 
 <div class="sidebar">
 
-    <div>
-        <div class="logo">📚 LibraryOS</div>
-        <div class="logo-text">Üye Paneli</div>
+    <div class="logo">📚 LibraryOS</div>
+    <div class="logo-text">Üye Paneli</div>
 
-        <div class="menu">
-
-            <a href="{{ url_for('uye_dashboard') }}">
-                🏠 <span>Ana Sayfa</span>
-            </a>
-
-            <a href="{{ url_for('uye_kitaplar') }}">
-                📚 <span>Kitaplar</span>
-            </a>
-
-            <a href="{{ url_for('uye_rezervasyonlar') }}" class="active">
-                📌 <span>Rezervasyonlarım</span>
-            </a>
-
-            <a href="{{ url_for('uye_profil') }}">
-                👤 <span>Profil</span>
-            </a>
-
-            <a href="{{ url_for('logout') }}">
-                🚪 <span>Çıkış</span>
-            </a>
-
-        </div>
+    <div class="menu">
+        <a href="{{ url_for('uye_dashboard') }}">🏠 Ana Sayfa</a>
+        <a href="{{ url_for('uye_kitaplar') }}">📚 Kitaplar</a>
+        <a class="active" href="{{ url_for('uye_rezervasyonlar') }}">📌 Rezervasyonlarım</a>
+        <a href="{{ url_for('uye_profil') }}">👤 Profil</a>
+        <a href="{{ url_for('logout') }}">🚪 Çıkış</a>
     </div>
 
     <div class="bottom-user">
@@ -251,25 +180,17 @@ table td{
             <p>Rezerve ettiğiniz kitaplar</p>
         </div>
 
-        <div class="status">
-            ● Aktif Üye
-        </div>
+        <div class="status">● Aktif Üye</div>
     </div>
 
     <div class="cards">
-
         <div class="card">
             <h2>{{ reserved_books|length }}</h2>
             <p>Toplam Rezervasyon</p>
         </div>
-
     </div>
 
     <div class="table-card">
-
-        <div class="table-header">
-            <h2>Rezervasyon Listesi</h2>
-        </div>
 
         <table>
 
@@ -277,22 +198,56 @@ table td{
                 <tr>
                     <th>#</th>
                     <th>Kitap</th>
-                    <th>Tarih</th>
+                    <th>Rezervasyon</th>
+                    <th>Son Tarih</th>
+                    <th>Kalan Süre</th>
                     <th>Durum</th>
+                    <th>İşlem</th>
                 </tr>
             </thead>
 
             <tbody>
 
             {% for book in reserved_books %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ book.title }}</td>
-                    <td>{{ book.reserve_date }}</td>
-                    <td>
-                        <span class="badge">{{ book.status }}</span>
-                    </td>
-                </tr>
+
+            {% set reserve = book.reserve_date[:16] %}
+            {% set expire = book.expire_date[:16] if book.expire_date else '-' %}
+
+            <tr>
+
+                <td>{{ loop.index }}</td>
+
+<td>📚 {{ book.title }}</td>
+
+<td>{{ book.reserve_date|tarih }}</td>
+
+<td>{{ book.expire_date|tarih if book.expire_date else '-' }}</td>
+
+<td id="countdown-{{ book.id }}"
+    data-expire="{{ book.expire_date if book.expire_date else '' }}">
+</td>
+
+                <td>
+                    {% if book.status == "Bekliyor" %}
+                        <span style="color:green;font-weight:600;">⏳ Aktif</span>
+                    {% elif book.status == "Süresi Doldu" %}
+                        <span style="color:red;font-weight:600;">🔴 Süre Doldu</span>
+                    {% else %}
+                        <span>{{ book.status }}</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if book.status == "Bekliyor" %}
+                    <a href="{{ url_for('rezervasyon_iptal', id=book.id) }}"
+                       class="cancel-btn">
+                       İptal Et
+                    </a>
+                    {% endif %}
+                </td>
+
+            </tr>
+
             {% endfor %}
 
             </tbody>
@@ -302,6 +257,49 @@ table td{
     </div>
 
 </div>
+
+<script>
+function updateCountdowns() {
+
+    document.querySelectorAll("[id^='countdown-']").forEach(el => {
+
+        const expireStr = el.dataset.expire;
+
+        // ❌ boş veri kontrolü
+        if (!expireStr || expireStr === "-" || expireStr === "None") {
+            el.innerHTML = "-";
+            return;
+        }
+
+        // 🔥 tarih parse (JS uyumlu)
+        const expire = new Date(expireStr.replace(" ", "T"));
+        const now = new Date();
+
+        const diff = expire - now;
+
+        // ❌ süre doldu
+        if (diff <= 0) {
+            el.innerHTML = "SÜRE DOLDU";
+            el.style.color = "red";
+            return;
+        }
+
+        // ⏳ kalan süre hesap
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+       const days = Math.floor(hours / 24);
+       const remainingHours = hours % 24;
+
+       el.innerHTML = `${days} gün ${remainingHours} saat ${minutes} dk`;
+        el.style.color = hours < 6 ? "red" : "green";
+    });
+}
+
+updateCountdowns();
+setInterval(updateCountdowns, 60000);
+</script>
+
 
 </body>
 </html>

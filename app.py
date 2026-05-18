@@ -3,7 +3,7 @@ import sqlite3
 import os
 import hashlib
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = "libraryos_secret_key"
@@ -96,13 +96,14 @@ def init_db():
     """)
     c.execute("""
         CREATE TABLE IF NOT EXISTS reservations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            book_id INTEGER NOT NULL,
-            reserve_date TEXT DEFAULT CURRENT_TIMESTAMP,
-            status TEXT DEFAULT 'Bekliyor',
-            FOREIGN KEY(user_id) REFERENCES users(id),
-            FOREIGN KEY(book_id) REFERENCES books(id)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        book_id INTEGER NOT NULL,
+        reserve_date TEXT DEFAULT CURRENT_TIMESTAMP,
+        expire_date TEXT,
+        status TEXT DEFAULT 'Bekliyor',
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(book_id) REFERENCES books(id)
         )
     """)
     c.execute("SELECT COUNT(*) FROM books")
@@ -988,8 +989,6 @@ def iade_et(loan_id):
 
     return redirect(url_for("uye_kitaplar"))
 
-
-
 @app.route("/uye/rezervasyonlar")
 def uye_rezervasyonlar():
 
@@ -998,10 +997,36 @@ def uye_rezervasyonlar():
 
     conn = get_db()
 
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Süresi dolan rezervasyonları güncelle
+    expired = conn.execute("""
+        SELECT id, book_id FROM reservations
+        WHERE expire_date < ?
+        AND status = 'Bekliyor'
+    """, (now,)).fetchall()
+
+    for r in expired:
+        conn.execute("""
+            UPDATE reservations
+            SET status = 'Süresi Doldu'
+            WHERE id = ?
+        """, (r["id"],))
+
+        conn.execute("""
+            UPDATE books
+            SET status = 'Mevcut'
+            WHERE id = ?
+        """, (r["book_id"],))
+
+    conn.commit()
+
+    # Kullanıcının rezervasyonları
     reserved_books = conn.execute("""
         SELECT r.id,
                b.title,
                r.reserve_date,
+               r.expire_date,
                r.status
         FROM reservations r
         JOIN books b ON r.book_id = b.id
@@ -1025,17 +1050,16 @@ def rezervasyon_yap(book_id):
 
     conn = get_db()
 
-    # kitap kontrol
-    book = conn.execute(
-        "SELECT status FROM books WHERE id=?",
-        (book_id,)
-    ).fetchone()
+    # Kitap kontrol
+    book = conn.execute("""
+        SELECT status FROM books WHERE id=?
+    """, (book_id,)).fetchone()
 
     if not book or book["status"] != "Mevcut":
         conn.close()
         return "Bu kitap şu an rezerve edilemez"
 
-    # aynı rezervasyon var mı?
+    # Aynı rezervasyon var mı?
     existing = conn.execute("""
         SELECT id FROM reservations
         WHERE user_id=? AND book_id=? AND status='Bekliyor'
@@ -1045,10 +1069,18 @@ def rezervasyon_yap(book_id):
         conn.close()
         return redirect(url_for("uye_kitaplar"))
 
+    # 2 günlük süre
+    expire_date = datetime.now() + timedelta(days=2)
+
     conn.execute("""
-        INSERT INTO reservations (user_id, book_id)
-        VALUES (?, ?)
-    """, (session["user_id"], book_id))
+        INSERT INTO reservations
+        (user_id, book_id, expire_date, status)
+        VALUES (?, ?, ?, 'Bekliyor')
+    """, (
+        session["user_id"],
+        book_id,
+        expire_date.strftime("%Y-%m-%d %H:%M:%S")
+    ))
 
     conn.execute("""
         UPDATE books
@@ -1091,6 +1123,9 @@ def rezervasyon_iptal(id):
     conn.close()
 
     return redirect(url_for("uye_rezervasyonlar"))
+
+
+
 
 
 
