@@ -328,6 +328,7 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
+
 # --- ÜYE PANELİ ---
 @app.route("/uye")
 def uye_dashboard():
@@ -342,32 +343,37 @@ def uye_dashboard():
         (session.get("email"),)
     ).fetchone()
 
-    stats = {"total": 0, "active": 0, "reserved": 0}
+    stats = {"total": 0, "active": 0, "reserved": 0, "overdue": 0}
     user_books = []
 
     if member:
         m_id = member["id"]
 
-        # toplam ödünç
         stats["total"] = conn.execute(
             "SELECT COUNT(*) FROM loans WHERE member_id=?",
             (m_id,)
         ).fetchone()[0]
 
-        # aktif ödünç
         stats["active"] = conn.execute(
             "SELECT COUNT(*) FROM loans WHERE member_id=? AND status='Aktif'",
             (m_id,)
         ).fetchone()[0]
 
-        # rezervasyon (users.id kullanılıyor)
         stats["reserved"] = conn.execute("""
             SELECT COUNT(*)
             FROM reservations
             WHERE user_id=? AND status='Bekliyor'
         """, (session["user_id"],)).fetchone()[0]
 
-        # aktif kitaplar
+        # GECİKMİŞ KİTAP
+        stats["overdue"] = conn.execute("""
+            SELECT COUNT(*)
+            FROM loans
+            WHERE member_id=?
+            AND status='Aktif'
+            AND date(loan_date) < date('now', '-14 day')
+        """, (m_id,)).fetchone()[0]
+
         user_books = conn.execute("""
             SELECT b.title, l.loan_date, l.status 
             FROM loans l 
@@ -382,6 +388,8 @@ def uye_dashboard():
         stats=stats,
         user_books=user_books
     )
+
+
 
 @app.route("/dashboard")
 def dashboard():

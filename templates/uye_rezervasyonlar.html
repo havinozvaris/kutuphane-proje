@@ -147,8 +147,92 @@ table td{
     font-weight:600;
 }
 
+.popup-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.35);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.popup-box{
+    width:420px;
+    background:white;
+    border-radius:22px;
+    padding:40px 30px;
+    text-align:center;
+    animation:popupShow .25s ease;
+}
+
+.popup-icon{
+    width:95px;
+    height:95px;
+    border:5px solid #f2b179;
+    color:#f2b179;
+    border-radius:50%;
+    margin:auto;
+    font-size:60px;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:25px;
+}
+
+.popup-box h2{
+    font-size:24px;
+    color:#555;
+    margin-bottom:30px;
+    line-height:1.2;
+}
+
+.popup-buttons{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+}
+
+.popup-buttons button{
+    border:none;
+    padding:14px 22px;
+    border-radius:8px;
+    color:white;
+    font-size:20px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+#confirmBtn{
+    background:#6c5ce7;
+}
+
+#cancelBtn{
+    background:#6c757d;
+}
+
+.popup-buttons button:hover{
+    transform:scale(1.05);
+}
+
+@keyframes popupShow{
+    from{
+        transform:scale(.8);
+        opacity:0;
+    }
+    to{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
 </style>
 </head>
+
+
+
+
 
 <body>
 
@@ -237,14 +321,17 @@ table td{
                     {% endif %}
                 </td>
 
-                <td>
-                    {% if book.status == "Bekliyor" %}
-                    <a href="{{ url_for('rezervasyon_iptal', id=book.id) }}"
-                       class="cancel-btn">
-                       İptal Et
-                    </a>
-                    {% endif %}
-                </td>
+               <td>
+    {% if book.status == "Bekliyor" %}
+
+    <a href="{{ url_for('rezervasyon_iptal', id=book.id) }}"
+       class="cancel-btn"
+       onclick="openPopup(event, this.href)">
+       İptal Et
+    </a>
+
+    {% endif %}
+</td>
 
             </tr>
 
@@ -257,6 +344,29 @@ table td{
     </div>
 
 </div>
+
+
+
+<div id="customPopup" class="popup-overlay">
+
+    <div class="popup-box">
+
+        <div class="popup-icon">!</div>
+
+        <h2>Rezervasyonu iptal etmek istiyor musun?</h2>
+
+        <div class="popup-buttons">
+
+            <button id="confirmBtn">Evet İptal Et</button>
+
+            <button id="cancelBtn">Vazgeç</button>
+
+        </div>
+
+    </div>
+
+</div>
+
 
 <script>
 function updateCountdowns() {
@@ -298,6 +408,27 @@ function updateCountdowns() {
 
 updateCountdowns();
 setInterval(updateCountdowns, 60000);
+
+let cancelUrl = "";
+
+function openPopup(event, url){
+
+    event.preventDefault();
+
+    cancelUrl = url;
+
+    document.getElementById("customPopup").style.display = "flex";
+}
+
+document.getElementById("cancelBtn").onclick = function(){
+
+    document.getElementById("customPopup").style.display = "none";
+}
+
+document.getElementById("confirmBtn").onclick = function(){
+
+    window.location.href = cancelUrl;
+}
 </script>
 
 
