@@ -380,15 +380,36 @@ def uye_dashboard():
             JOIN books b ON l.book_id = b.id 
             WHERE l.member_id=? AND l.status='Aktif'
         """, (m_id,)).fetchall()
-
+       # OKUMA GEÇMİŞİ
+    gecmis_kitaplar = conn.execute("""
+        SELECT b.title, l.loan_date, l.return_date
+        FROM loans l
+        JOIN books b ON l.book_id = b.id
+        WHERE l.member_id = ?
+        AND l.status = 'İade'
+        ORDER BY l.return_date DESC
+    """, (m_id,)).fetchall()
+    
+    
+    
+    stats["overdue"] = conn.execute("""
+    SELECT COUNT(*)
+    FROM loans
+    WHERE member_id=?
+    AND status='Aktif'
+    AND date(loan_date) < date('now', '-14 day')
+""", (m_id,)).fetchone()[0]
+    
+    
+    
     conn.close()
 
     return render_template(
         "member_home.html",
         stats=stats,
-        user_books=user_books
-    )
-
+        user_books=user_books,
+        gecmis_kitaplar=gecmis_kitaplar
+    ) 
 
 
 @app.route("/dashboard")

@@ -8,6 +8,8 @@
 
 <style>
 
+/* ===== SENİN CSS AYNI KALDI ===== */
+
 *{
     margin:0;
     padding:0;
@@ -135,6 +137,7 @@ body{
     border-radius:24px;
     padding:28px;
     box-shadow:0 10px 25px rgba(0,0,0,.04);
+    margin-bottom:30px;
 }
 
 .table-header{
@@ -198,43 +201,24 @@ table td{
         margin-left:100px;
         width:calc(100% - 100px);
     }
-
 }
 
 </style>
 </head>
+
 <body>
 
 <div class="sidebar">
-
     <div>
         <div class="logo">📚 LibraryOS</div>
         <div class="logo-text">Üye Paneli</div>
 
         <div class="menu">
-
-            <a href="{{ url_for('uye_dashboard') }}" class="active">
-                🏠 <span>Ana Sayfa</span>
-            </a>
-
-            <a href="{{ url_for('uye_kitaplar') }}">
-                📚 <span>Kitaplar</span>
-            </a>
-
-            <a href="{{ url_for('uye_rezervasyonlar') }}">
-        📌 <span>Rezervasyonlarım</span>
-    </a>
-
-         <a href="{{ url_for('uye_profil') }}">
-    👤 <span>Profil</span>
-</a>
-
-           
-
-            <a href="{{ url_for('logout') }}">
-                🚪 <span>Çıkış</span>
-            </a>
-
+            <a href="{{ url_for('uye_dashboard') }}" class="active">🏠 <span>Ana Sayfa</span></a>
+            <a href="{{ url_for('uye_kitaplar') }}">📚 <span>Kitaplar</span></a>
+            <a href="{{ url_for('uye_rezervasyonlar') }}">📌 <span>Rezervasyonlarım</span></a>
+            <a href="{{ url_for('uye_profil') }}">👤 <span>Profil</span></a>
+            <a href="{{ url_for('logout') }}">🚪 <span>Çıkış</span></a>
         </div>
     </div>
 
@@ -242,7 +226,6 @@ table td{
         <h3>{{ session['name'] }}</h3>
         <p>Kütüphane Üyesi</p>
     </div>
-
 </div>
 
 <div class="main">
@@ -253,13 +236,10 @@ table td{
             <p>Kütüphane hesabına genel bakış</p>
         </div>
 
-        <div class="status">
-            ● Aktif Üye
-        </div>
+        <div class="status">● Aktif Üye</div>
     </div>
 
     <div class="cards">
-
         <div class="card">
             <h2>{{ stats.total }}</h2>
             <p>Aldığım Kitap</p>
@@ -275,25 +255,21 @@ table td{
             <p>Rezervasyon</p>
         </div>
 
-       <div class="card">
-    <h2>{{ stats.overdue }}</h2>
-    <p>Geciken Kitap</p>
-</div>
-
+        <div class="card">
+            <h2>{{ stats.overdue }}</h2>
+            <p>Geciken Kitap</p>
+        </div>
     </div>
 
+    <!-- 📚 AKTİF KİTAPLAR -->
     <div class="table-card">
 
         <div class="table-header">
             <h2>Kitaplarım</h2>
-
-            <a href="{{ url_for('uye_dashboard') }}" class="btn">
-                Tümünü Gör
-            </a>
+            <a href="{{ url_for('uye_dashboard') }}" class="btn">Tümünü Gör</a>
         </div>
 
         <table>
-
             <thead>
                 <tr>
                     <th>#</th>
@@ -304,22 +280,54 @@ table td{
             </thead>
 
             <tbody>
-
                 {% for book in user_books %}
-
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td>{{ book.title }}</td>
                     <td>{{ book.loan_date }}</td>
-                    <td>
-                        <span class="badge">{{ book.status }}</span>
+                    <td><span class="badge">{{ book.status }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+    <!-- 📜 OKUMA GEÇMİŞİ -->
+    <div class="table-card">
+
+        <div class="table-header">
+            <h2>📜 Okuma Geçmişim</h2>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Kitap</th>
+                    <th>Alış Tarihi</th>
+                    <th>İade Tarihi</th>
+                    <th>Durum</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for bk in gecmis_kitaplar %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ bk.title }}</td>
+                    <td>{{ bk.loan_date | tarih }}</td>
+                    <td>{{ bk.return_date | tarih }}</td>
+                    <td><span class="badge">✓ Okundu</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:20px;">
+                        Henüz iade ettiğin kitap yok
                     </td>
                 </tr>
-
                 {% endfor %}
-
             </tbody>
-
         </table>
 
     </div>
