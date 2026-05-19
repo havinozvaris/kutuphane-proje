@@ -441,12 +441,39 @@ def books():
     q = request.args.get("q", "")
 
     books = conn.execute("""
-        SELECT *
-        FROM books
-        WHERE title LIKE ? OR author LIKE ? OR isbn LIKE ?
-        ORDER BY id DESC
-    """, (f"%{q}%", f"%{q}%", f"%{q}%")).fetchall()
+    SELECT 
+        MIN(b.id) as id,
+        b.title,
+        b.author,
+        MIN(b.isbn) as isbn,
+        b.category,
+        b.year,
 
+        COUNT(*) as toplam_adet,
+
+        SUM(
+            CASE 
+                WHEN b.status = 'Mevcut' THEN 1
+                ELSE 0
+            END
+        ) as mevcut_adet
+
+    FROM books b
+
+    WHERE 
+        b.title LIKE ?
+        OR b.author LIKE ?
+        OR b.isbn LIKE ?
+
+    GROUP BY 
+        b.title,
+        b.author,
+        b.category,
+        b.year
+
+    ORDER BY id DESC
+""", (f"%{q}%", f"%{q}%", f"%{q}%")).fetchall()
+    
     conn.close()
     return render_template("books.html", books=books, q=q)
 
@@ -845,19 +872,38 @@ def uye_kitaplar():
     member_id = member["id"] if member else None
 
     books = conn.execute("""
-        SELECT b.*,
-               l.id AS loan_id
+        SELECT 
+            b.*,
+            l.id AS loan_id,
+
+            (
+                SELECT COUNT(*)
+                FROM books b2
+                WHERE b2.title = b.title
+            ) AS toplam_adet,
+
+            (
+                SELECT COUNT(*)
+                FROM books b3
+                WHERE b3.title = b.title
+                AND b3.status = 'Mevcut'
+            ) AS mevcut_adet
+
         FROM books b
+
         LEFT JOIN loans l 
         ON b.id = l.book_id AND l.status='Aktif'
+
         ORDER BY b.id DESC
     """).fetchall()
 
     conn.close()
 
-    return render_template("member_books.html",
-                           books=books,
-                           member_id=member_id)
+    return render_template(
+        "member_books.html",
+        books=books,
+        member_id=member_id
+    )
 
 
 @app.route("/uye_profil")

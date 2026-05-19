@@ -14,7 +14,6 @@ body{
     display:flex;
 }
 
-/* SIDEBAR */
 .sidebar{
     width:280px;
     height:100vh;
@@ -59,7 +58,6 @@ body{
     background:rgba(255,255,255,0.15);
 }
 
-/* MAIN */
 .container{
     margin-left:280px;
     padding:40px;
@@ -94,13 +92,18 @@ td{
     padding:5px 10px;
     border-radius:8px;
     font-size:12px;
+    font-weight:700;
 }
 
 .mevcut{background:#d7ffe4;color:#00a651;}
 .oduncte{background:#fff4d7;color:#a67c00;}
 .rezerve{background:#ffd7d7;color:#a60000;}
 
-/* Butonlara hafif modern dokunuş (İstersen silebilirsin) */
+.adet{
+    font-weight:700;
+    color:#17095e;
+}
+
 button {
     cursor: pointer;
     padding: 6px 12px;
@@ -110,11 +113,11 @@ button {
     font-weight: 600;
     transition: 0.2s;
 }
+
 button:hover {
     background: #f0f0f0;
 }
 </style>
-
 </head>
 
 <body>
@@ -127,7 +130,7 @@ button:hover {
         <div class="menu">
             <a href="{{ url_for('uye_dashboard') }}">🏠 Ana Sayfa</a>
             <a href="{{ url_for('uye_kitaplar') }}" class="active">📚 Kitaplar</a>
-            <a href="{{ url_for('uye_rezervasyonlar') }}">📌 <span>Rezervasyonlarım</span></a>
+            <a href="{{ url_for('uye_rezervasyonlar') }}">📌 Rezervasyonlarım</a>
             <a href="{{ url_for('uye_profil') }}">👤 Profil</a>
             <a href="{{ url_for('logout') }}">🚪 Çıkış</a>
         </div>
@@ -147,6 +150,8 @@ button:hover {
     <th>Kategori</th>
     <th>İlk Basım Tarihi</th>
     <th>ISBN</th>
+    <th>Toplam Adet</th>
+    <th>Mevcut Adet</th>
     <th>Durum</th>
 </tr>
 </thead>
@@ -162,14 +167,24 @@ button:hover {
     <td>{{ book.isbn }}</td>
 
     <td>
+        <span class="adet">{{ book.toplam_adet }}</span>
+    </td>
+
+    <td>
+        <span class="adet">{{ book.mevcut_adet }}</span>
+    </td>
+
+    <td>
     {% if book.status == 'Mevcut' %}
         <span class="status mevcut">Mevcut</span>
+
         <form method="POST" action="{{ url_for('rezervasyon_yap', book_id=book.id) }}" style="display:inline;">
             <button type="submit">📌 Rezerve Et</button>
         </form>
 
     {% elif book.status == 'Ödünçte' %}
         <span class="status oduncte">Ödünçte</span>
+
         {% if member_id and book.loan_id %}
             <form method="POST" action="{{ url_for('iade_et', loan_id=book.loan_id) }}" onsubmit="return confirmIade(event, this);" style="display:inline;">
                 <button type="submit">↩ İade Et</button>
