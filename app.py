@@ -17,17 +17,13 @@ def tarih_formatla(tarih):
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "library.db")
 
-
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
-
-
 def sifre_hashle(sifre):
     return hashlib.sha256(sifre.encode()).hexdigest()
-
 
 def admin_required():
     if "user_id" not in session:
@@ -37,7 +33,6 @@ def admin_required():
         return redirect(url_for("uye_dashboard"))
 
     return None
-
 
 def init_db():
     conn = get_db()
@@ -177,11 +172,9 @@ def init_db():
     conn.commit()
     conn.close()
 
-
 @app.route("/")
 def index():
     return redirect(url_for("login"))
-
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -225,7 +218,6 @@ def login():
         error = "Kullanıcı adı/e-posta veya şifre hatalı!"
 
     return render_template("login.html", error=error)
-
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -331,7 +323,6 @@ def register():
 
     return render_template("register.html", error=error)
 
-
 @app.route("/logout")
 def logout():
     session.clear()
@@ -430,7 +421,6 @@ def dashboard():
         recent_loans=recent_loans
     )
 
-
 @app.route("/books")
 def books():
 
@@ -441,38 +431,38 @@ def books():
     q = request.args.get("q", "")
 
     books = conn.execute("""
-    SELECT 
-        MIN(b.id) as id,
-        b.title,
-        b.author,
-        MIN(b.isbn) as isbn,
-        b.category,
-        b.year,
+        SELECT 
+            MIN(b.id) AS id,
+            b.title,
+            b.author,
+            MIN(b.isbn) AS isbn,
+            b.category,
+            b.year,
 
-        COUNT(*) as toplam_adet,
+            COUNT(*) AS toplam_adet,
 
-        SUM(
-            CASE 
-                WHEN b.status = 'Mevcut' THEN 1
-                ELSE 0
-            END
-        ) as mevcut_adet
+            SUM(
+                CASE 
+                    WHEN b.status = 'Mevcut' THEN 1
+                    ELSE 0
+                END
+            ) AS mevcut_adet
 
-    FROM books b
+        FROM books b
 
-    WHERE 
-        b.title LIKE ?
-        OR b.author LIKE ?
-        OR b.isbn LIKE ?
+        WHERE 
+            b.title LIKE ?
+            OR b.author LIKE ?
+            OR b.isbn LIKE ?
 
-    GROUP BY 
-        b.title,
-        b.author,
-        b.category,
-        b.year
+        GROUP BY 
+            b.title,
+            b.author,
+            b.category,
+            b.year
 
-    ORDER BY id DESC
-""", (f"%{q}%", f"%{q}%", f"%{q}%")).fetchall()
+        ORDER BY id DESC
+    """, (f"%{q}%", f"%{q}%", f"%{q}%")).fetchall()
     
     conn.close()
     return render_template("books.html", books=books, q=q)
@@ -488,16 +478,19 @@ def add_book():
         conn = get_db()
 
         try:
-            conn.execute("""
-                INSERT INTO books (title, author, isbn, category, year)
-                VALUES (?, ?, ?, ?, ?)
-            """, (
-                d["title"],
-                d["author"],
-                d["isbn"],
-                d.get("category", "Klasik"),
-                d.get("year") or None
-            ))
+            for i in range(3):
+                yeni_isbn = d["isbn"] + f"-{i+1}"
+
+                conn.execute("""
+                    INSERT INTO books (title, author, isbn, category, year)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (
+                    d["title"],
+                    d["author"],
+                    yeni_isbn,
+                    d.get("category", "Klasik"),
+                    d.get("year") or None
+                ))
 
             conn.commit()
 
@@ -509,7 +502,6 @@ def add_book():
         return redirect(url_for("books"))
 
     return render_template("add_book.html", error=None)
-
 
 @app.route("/books/edit/<int:id>", methods=["GET", "POST"])
 def edit_book(id):
@@ -545,7 +537,6 @@ def edit_book(id):
 
     return render_template("books.html", books=[book], error=None)
 
-
 @app.route("/books/delete/<int:id>", methods=["POST"])
 def delete_book(id):
     kontrol = admin_required()
@@ -558,7 +549,6 @@ def delete_book(id):
     conn.close()
 
     return redirect(url_for("books"))
-
 
 @app.route("/members")
 def members():
@@ -581,7 +571,6 @@ def members():
     conn.close()
 
     return render_template("uyeler.html", members=members, q=q)
-
 
 @app.route("/members/add", methods=["GET", "POST"])
 def add_member():
@@ -610,7 +599,6 @@ def add_member():
 
     return render_template("uye_ekle.html", member=None, error=None)
 
-
 @app.route("/members/edit/<int:id>", methods=["GET", "POST"])
 def edit_member(id):
     kontrol = admin_required()
@@ -638,7 +626,6 @@ def edit_member(id):
 
     return render_template("uye_ekle.html", member=member, error=None)
 
-
 @app.route("/members/delete/<int:id>", methods=["POST"])
 def delete_member(id):
     kontrol = admin_required()
@@ -651,7 +638,6 @@ def delete_member(id):
     conn.close()
 
     return redirect(url_for("members"))
-
 
 @app.route("/loans")
 def loans():
@@ -691,7 +677,6 @@ def loans():
         all_members=all_members,
         active_loans=active_loans
     )
-
 
 @app.route("/loans/add", methods=["POST"])
 def add_loan():
@@ -735,7 +720,6 @@ def add_loan():
     conn.close()
 
     return redirect(url_for("loans"))
-
 
 # --- YENİLENEN İADE ALMA FONKSİYONU (HASAR VE SUCCESS BİLDİRİMİ ENTEGRELİ) ---
 @app.route("/loans/return/<int:id>", methods=["POST"])
@@ -789,7 +773,6 @@ def return_loan(id):
     conn.close()
     return redirect(url_for("iade_al"))
 
-
 @app.route("/iade-al")
 def iade_al():
     kontrol = admin_required()
@@ -816,7 +799,6 @@ def iade_al():
     conn.close()
 
     return render_template("iade_al.html", loaned_books=loaned_books)
-
 
 @app.route("/reports")
 def reports():
@@ -905,7 +887,6 @@ def uye_kitaplar():
         member_id=member_id
     )
 
-
 @app.route("/uye_profil")
 def uye_profil():
     if "user_id" not in session:
@@ -941,9 +922,6 @@ def uye_profil():
         last_login=session.get("last_login", "Bilinmiyor")
     )
 
-
-
-
 @app.route("/sifre_degistir", methods=["POST"])
 def sifre_degistir():
 
@@ -973,9 +951,6 @@ def sifre_degistir():
     conn.close()
 
     return redirect(url_for("uye_profil")) 
-
-
-
 
 @app.route("/odunc-al/<int:book_id>", methods=["POST"])
 def odunc_al(book_id):
@@ -1019,10 +994,6 @@ def odunc_al(book_id):
 
     return redirect(url_for("uye_kitaplar"))
 
-
-
-
-
 @app.route("/iade-et/<int:loan_id>", methods=["POST"])
 def iade_et(loan_id):
 
@@ -1054,7 +1025,6 @@ def iade_et(loan_id):
 
     conn.commit()
     conn.close()
-
 
     return redirect(url_for("uye_kitaplar"))
 
@@ -1110,7 +1080,6 @@ def uye_rezervasyonlar():
         reserved_books=reserved_books
     )
 
-
 @app.route("/rezervasyon/<int:book_id>", methods=["POST"])
 def rezervasyon_yap(book_id):
 
@@ -1162,7 +1131,6 @@ def rezervasyon_yap(book_id):
 
     return redirect(url_for("uye_kitaplar"))
 
-
 @app.route("/rezervasyon_iptal/<int:id>")
 def rezervasyon_iptal(id):
 
@@ -1193,7 +1161,47 @@ def rezervasyon_iptal(id):
 
     return redirect(url_for("uye_rezervasyonlar"))
 
+def mevcut_kitaplari_3e_tamamla():
+    conn = get_db()
+    c = conn.cursor()
+
+    kitaplar = c.execute("""
+        SELECT 
+            title, author, category, year,
+            MIN(isbn) AS base_isbn,
+            COUNT(*) AS adet
+        FROM books
+        GROUP BY title, author, category, year
+    """).fetchall()
+
+    for kitap in kitaplar:
+        eksik = 3 - kitap["adet"]
+
+        if eksik > 0:
+            temiz_isbn = kitap["base_isbn"].split("-KOPYA")[0]
+
+            for i in range(eksik):
+                yeni_isbn = f"{temiz_isbn}-KOPYA{i+1}"
+
+                try:
+                    c.execute("""
+                        INSERT INTO books (title, author, isbn, category, year, status)
+                        VALUES (?, ?, ?, ?, ?, 'Mevcut')
+                    """, (
+                        kitap["title"],
+                        kitap["author"],
+                        yeni_isbn,
+                        kitap["category"],
+                        kitap["year"]
+                    ))
+                except sqlite3.IntegrityError:
+                    pass
+
+    conn.commit()
+    conn.close()
+
 
 if __name__ == "__main__":
     init_db()
+    mevcut_kitaplari_3e_tamamla()
     app.run(debug=True, port=5000)
