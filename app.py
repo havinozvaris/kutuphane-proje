@@ -951,6 +951,48 @@ def uye_profil():
         last_login=session.get("last_login", "Bilinmiyor")
     )
 
+@app.route("/profil_guncelle", methods=["POST"])
+def profil_guncelle():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    email = request.form.get("email", "").strip()
+    phone = request.form.get("phone", "").strip()
+
+    if len(phone) != 11 or not phone.isdigit():
+        return "Telefon numarası 11 haneli olmalıdır."
+
+    conn = get_db()
+
+    try:
+        # users tablosunu güncelle
+        conn.execute("""
+            UPDATE users
+            SET email=?, phone=?
+            WHERE id=?
+        """, (email, phone, session["user_id"]))
+
+        # members tablosunu da güncelle
+        conn.execute("""
+            UPDATE members
+            SET email=?, phone=?
+            WHERE email=?
+        """, (email, phone, session["email"]))
+
+        conn.commit()
+
+        # session içindeki e-postayı da güncelle
+        session["email"] = email
+
+    except sqlite3.IntegrityError:
+        conn.close()
+        return "Bu e-posta veya telefon başka kullanıcı tarafından kullanılıyor."
+
+    conn.close()
+
+    return redirect(url_for("uye_profil"))
+
 @app.route("/sifre_degistir", methods=["POST"])
 def sifre_degistir():
 

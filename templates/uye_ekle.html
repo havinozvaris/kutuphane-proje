@@ -7,12 +7,10 @@
 
 <div style="max-width:500px;">
 
-  <!-- 🔙 GERİ -->
   <a href="{{ url_for('members') }}" class="btn btn-outline btn-sm">← Geri</a>
 
   <div class="card" style="padding:30px;margin-top:20px;">
 
-    <!-- ✅ DOĞRU ROUTE -->
     <form method="post" action="{{ url_for('add_member') }}">
 
       <div class="form-group">
@@ -27,7 +25,28 @@
 
       <div class="form-group">
         <label>Telefon</label>
-        <input type="text" name="phone">
+
+        <input 
+          type="text"
+          name="phone"
+          maxlength="11"
+          pattern="[0-9]{11}"
+          placeholder="05XXXXXXXXX"
+          required
+
+          oninput="
+            this.value = this.value.replace(/[^0-9]/g, '');
+
+            if(this.value.length > 11){
+              this.value = this.value.slice(0,11);
+            }
+          "
+        >
+
+        <small style="color:gray;">
+          Telefon numarası 11 haneli olmalıdır.
+        </small>
+
       </div>
 
       <button class="btn btn-primary">Kaydet</button>

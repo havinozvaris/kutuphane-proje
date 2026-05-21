@@ -5,7 +5,6 @@
 {% block content %}
 
 <style>
-
 .profile-card{
     background:white;
     border-radius:24px;
@@ -62,8 +61,13 @@ input{
 
 .btn{
     margin-top:20px;
+    background:#5b3df5;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:12px;
+    cursor:pointer;
 }
-
 </style>
 
 <div class="profile-card">
@@ -92,12 +96,32 @@ input{
             <p>{{ book_count }}</p>
         </div>
 
-        <div class="box">
-            <label>Son Giriş</label>
-            <p>{{ last_login }}</p>
-        </div>
-
     </div>
+
+    <form method="POST" action="{{ url_for('profil_guncelle') }}">
+
+        <h3 style="margin-top:35px;">👤 Bilgilerimi Güncelle</h3>
+
+        <input type="email"
+               name="email"
+               value="{{ user.email }}"
+               placeholder="E-posta"
+               required>
+
+        <input type="tel"
+               name="phone"
+               value="{{ user.phone }}"
+               placeholder="Telefon"
+               maxlength="11"
+               pattern="[0-9]{11}"
+               title="Telefon numarası 11 haneli olmalıdır"
+               required>
+
+        <button class="btn" type="submit">
+            Bilgileri Güncelle
+        </button>
+
+    </form>
 
     <form method="POST" action="{{ url_for('sifre_degistir') }}">
 
