@@ -564,7 +564,11 @@ def edit_book(id):
     book = conn.execute("SELECT * FROM books WHERE id=?", (id,)).fetchone()
     conn.close()
 
-    return render_template("books.html", books=[book], error=None)
+   
+    return render_template(
+    "edit_book.html",
+    book=book
+)
 
 @app.route("/books/delete/<int:id>", methods=["POST"])
 def delete_book(id):
