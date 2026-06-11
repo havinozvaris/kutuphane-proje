@@ -178,9 +178,12 @@ button:hover {
     {% if book.status == 'Mevcut' %}
         <span class="status mevcut">Mevcut</span>
 
-        <form method="POST" action="{{ url_for('rezervasyon_yap', book_id=book.id) }}" style="display:inline;">
-            <button type="submit">📌 Rezerve Et</button>
-        </form>
+      <form method="POST"
+      action="{{ url_for('rezervasyon_yap', book_id=book.id) }}"
+      onsubmit="return confirmReserve(event, this, '{{ book.title }}');"
+      style="display:inline;">
+    <button type="submit">📌 Rezerve Et</button>
+</form>
 
     {% elif book.status == 'Ödünçte' %}
         <span class="status oduncte">Ödünçte</span>
@@ -203,6 +206,7 @@ button:hover {
 </div>
 
 <script>
+
 function confirmIade(e, form){
     e.preventDefault();
 
@@ -217,7 +221,31 @@ function confirmIade(e, form){
             form.submit();
         }
     });
+
+    return false;
 }
+
+function confirmReserve(e, form, bookTitle){
+    e.preventDefault();
+
+    Swal.fire({
+        title: "Rezervasyon Onayı",
+        html: `<b>${bookTitle}</b><br>kitabını rezerve etmek istiyor musun?`,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "📌 Evet Rezerve Et",
+        cancelButtonText: "Vazgeç",
+        confirmButtonColor: "#17095e",
+        cancelButtonColor: "#6c757d"
+    }).then((result) => {
+        if(result.isConfirmed){
+            form.submit();
+        }
+    });
+
+    return false;
+}
+
 </script>
 
 </body>
